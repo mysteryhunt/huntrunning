@@ -8,8 +8,7 @@ from hunt.solving.models import *
 def get_team(request):
     team = request.META.get('REMOTE_USER', None)
     if team is None:
-        team = "codex"
-        #raise RuntimeError("no team")
+        raise RuntimeError("no team")
     team = Team.objects.get(id=team)
     return team
 
