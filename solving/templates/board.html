@@ -1,0 +1,32 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Solving status board{% endblock %}
+
+{% block content %}
+<div id="content-main">
+
+<table>
+  <tr>
+    <th>Team name</th>
+    <th>(non-meta) Puzzles solved</th>
+    {% for meta in metas %}
+    <th>{{ meta.title }}</th>
+    {% endfor %}
+  </tr>
+
+{% load board %}
+
+{% for team in teams %}
+  <tr>
+    <td>{{ team.name }}</td>
+    <td>{{ team.puzzles_solved }}</td>
+    {% for meta in metas %}
+    <td{% if team_round_solves|lookup:team|meta_solved:meta %} style="background-color: green" {% endif %}>{{team_round_solves|lookup:team|puzzles_solved:meta}}</td>
+    {% endfor %}
+  </tr>
+{% endfor %}
+
+</table>
+
+</div>
+{% endblock %}

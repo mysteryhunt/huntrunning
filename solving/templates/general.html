@@ -1,0 +1,24 @@
+<form action="general" method="POST">
+{% csrf_token %}
+
+{% if message %}
+<div class="message">
+{{ message }}
+</div>
+{% endif %}
+
+Request a callback:
+<br/>
+Reason: <select name="queue">
+{% for name, queue in queues %}
+<option value="{{ queue }}">{{name}}</option>
+{% endfor %}
+</select>
+<br/>
+What's up?<br/>
+<textarea rows="10" cols="70" name="reason"></textarea>
+<br/>
+
+<input type="submit" value="Request a callback"><br/>
+
+</form>

@@ -1,0 +1,26 @@
+<form action="callin" method="POST">
+{% csrf_token %}
+
+{% if message %}
+<div class="message">
+{{ message }}
+</div>
+{% endif %}
+
+Call in an answer for <b>{{ puzzle.title }}</b>:
+<br/>
+<input type="hidden" name="puzzle" value="{{ puzzle.title }}" />
+<input type="text" name="answer" /><br/>
+
+<br/>
+Incorrect answers:
+<ul>
+{% for answer in past_answers %}
+<li {% if not answer.handled %}class="pending"{% endif %} >{{ answer.answer }}</li>
+{% endfor %}
+</ul>
+<br/>
+
+<input type="submit" value="Call in"><br/>
+
+</form>

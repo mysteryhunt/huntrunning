@@ -1,0 +1,70 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+
+	DocumentRoot /var/www
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /var/www/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+
+    AuthUserFile /home/novalis/hunt/b/.htpasswd
+    AuthName "Mystery Hunt"
+    AuthType Basic
+    Require valid-user
+
+    RewriteEngine On
+    RewriteCond %{SCRIPT_FILENAME} !^/(users|dynamic|static)
+    RewriteCond %{LA-U:REMOTE_USER} !^jasper$
+    RewriteRule (.*) /users/%{LA-U:REMOTE_USER}/$1
+
+	</Directory>
+
+	<Directory /home/novalis/hunt/b/teams/>
+        Order allow,deny
+        Allow from all
+
+	</Directory>
+
+  Alias /users/ /home/novalis/hunt/b/teams/
+
+  <Location /dynamic>
+  AuthType Basic
+  AuthName "Mystery Hunt"
+  AuthUserFile /home/novalis/hunt/b/.htpasswd 
+  Require valid-user
+  </Location>
+
+  <Location /dynamic/admin>
+  AuthType Basic
+  AuthName "Mystery Hunt"
+  AuthUserFile /home/novalis/hunt/b/.htpasswd 
+  Require User jasper
+  </Location>
+
+  WSGIScriptAlias /dynamic /home/novalis/hunt/b/hunt/apache/django.wsgi
+
+  Alias /static/admin /home/novalis/hunt/b/adminmedia
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel debug
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    Alias /doc/ "/usr/share/doc/"
+    <Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    </Directory>
+
+</VirtualHost>
