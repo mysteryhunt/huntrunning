@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from hunt.solving.models import Team
+from hunt.common import safe_link
 
 import crypt
 import os
@@ -11,7 +12,9 @@ SALT_VALUES=string.letters + string.digits
 
 class Command(BaseCommand):
     help = """Starts the hunt, by creating a directory structure and 
-htaccess file for each team and setting up the initial index.html
+htaccess file for each team and setting up the initial index.html.
+
+Also, release the first batch of puzzles
 
 This command will overwrite the htpasswd file and index files.
 """
@@ -25,10 +28,16 @@ This command will overwrite the htpasswd file and index files.
                 os.mkdir(team_path)
             except OSError:
                 pass
-            index_path = os.path.join(team_path, 'index.html')
-            f = open(index_path, 'w')
-            f.write("""<html><head><title>Hunt</title></head><body>cscott, we'll need to put the actual initial index.html here</body></html>""")
-            f.close()
+            
+            #FIXME: need to figure out what files will be linked --
+            #ideally, this will probably be a whole directory
+            for filename in ["index.html"]:
+                index_path = os.path.join(settings.PUZZLE_PATH, filename)
+                team_index_path = os.path.join(team_path, filename)
+            
+                safe_link(index_path, team_index_path)
+
+            team.release(-1, 0)
 
             salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
             htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))

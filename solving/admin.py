@@ -11,8 +11,13 @@ class TeamAdmin(admin.ModelAdmin):
 
 admin.site.register(Team, TeamAdmin)
 
+class UnlockBatchAdmin(admin.ModelAdmin):
+    list_display = ('batch', 'points_required')
+
+admin.site.register(UnlockBatch, UnlockBatchAdmin)
+
 class PuzzleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'path', 'round', 'answer', 'is_meta')
+    list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch')
 
 admin.site.register(Puzzle, PuzzleAdmin)
 

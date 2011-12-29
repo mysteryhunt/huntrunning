@@ -37,7 +37,7 @@ def do_callin(request):
     team = get_team(request)
     puzzle = Puzzle.objects.get(title=request.POST["puzzle"])
     answer = request.POST['answer']
-    answer_normalized = normalize(answer)
+    answer_normalized = normalize_answer(answer)
     if AnswerRequest.objects.filter(team=team, puzzle=puzzle, answer_normalized=answer_normalized).count() > 0:
         message = "Already called in!"
         return show_callin(request, dict(message=message))
