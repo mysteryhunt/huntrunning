@@ -21,11 +21,22 @@ class PuzzleAdmin(admin.ModelAdmin):
 
 admin.site.register(Puzzle, PuzzleAdmin)
 
+def team_link(self, areq):
+    url = urlresolvers.reverse('admin:solving_team_change', args=(areq.team_id,))
+    return '<a href="%s">%s</a> at %s' % (url, areq.team.name, areq.team.phone)
+team_link.allow_tags = True
+
+
 class CallRequestAdmin(admin.ModelAdmin):
      list_display = ('team', 'time', 'queue', 'handled', 'reason')
      list_filter = ('queue', 'team', 'handled')
      list_editable = ('handled',)
+
+     fields = ('team_link', 'queue', 'handled', 'reason')
+     readonly_fields = ('team_link',)
      actions = ('handle',)
+
+     team_link = team_link
 
      def handle(self, request, crequests):
          for crequest in crequests:
@@ -39,8 +50,11 @@ class AnswerRequestAdmin(admin.ModelAdmin):
      list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled')
      list_filter = ('team', 'handled', 'puzzle')
      list_editable = ('handled',)
-     readonly_fields = ('team', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time')
+     fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'handled')
+     readonly_fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time')
      actions = ('handle',)
+
+     team_link = team_link
 
      def puzzle_link(self, areq):
          url = urlresolvers.reverse('admin:solving_puzzle_change', args=(areq.puzzle_id,))
