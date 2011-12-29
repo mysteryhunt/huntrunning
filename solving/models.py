@@ -94,18 +94,18 @@ def do_unlock(answer_request):
     team.release(old_score, team.score)
 
 class Puzzle(models.Model):
-     title = models.CharField(max_length=100, primary_key=True)
-     round = models.CharField(max_length=100)
-     answer = models.CharField(max_length=100)
-     is_meta = models.BooleanField()
-     unlock_batch = models.IntegerField()
+    title = models.CharField(max_length=100, primary_key=True)
+    round = models.CharField(max_length=100)
+    answer = models.CharField(max_length=100)
+    is_meta = models.BooleanField()
+    unlock_batch = models.IntegerField()
 
-     def __unicode__(self):
-         return self.title
+    def __unicode__(self):
+        return self.title
 
-     @property
-     def path(self):
-         return os.path.join(canonicalize(self.round), canonicalize(self.title))
+    @property
+    def path(self):
+        return os.path.join(canonicalize(self.round), canonicalize(self.title))
 
 class UnlockBatch(models.Model):
     batch = models.IntegerField()
