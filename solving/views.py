@@ -35,13 +35,13 @@ def show_callin(request, extra={}):
 
 def do_callin(request):
     team = get_team(request)
-    puzzle = Puzzle.objects.get(title=request.POST["puzzle"])
+    puzzle = Puzzle.objects.get(id=request.POST["puzzle"])
     answer = request.POST['answer']
     answer_normalized = normalize_answer(answer)
     if AnswerRequest.objects.filter(team=team, puzzle=puzzle, answer_normalized=answer_normalized).count() > 0:
         message = "Already called in!"
         return show_callin(request, dict(message=message))
-    AnswerRequest(team=team, puzzle=puzzle, answer=answer,answer_normalized=answer_normalized).save()
+    AnswerRequest(team=team, puzzle=puzzle, answer=answer,answer_normalized=answer_normalized, backsolve=request.POST['backsolve']).save()
     return render_to_response('called.html', locals(), context_instance=RequestContext(request))
 
 

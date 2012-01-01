@@ -59,6 +59,7 @@ class AnswerRequest(models.Model):
     answer = models.CharField(max_length=100)
     answer_normalized = models.CharField(max_length=100)
     puzzle = models.ForeignKey('Puzzle')
+    backsolve = models.BooleanField(default=False)
     handled = models.BooleanField(default=False)
 
     def correct(self):
