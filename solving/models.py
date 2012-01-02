@@ -15,7 +15,12 @@ class Team(models.Model):
     phone = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
     score = models.IntegerField(default=0)
+    event_points = models.IntegerField(default=0)
     unlocked = models.IntegerField(default=0)
+
+    @property
+    def answer_event_point_cost(self):
+        return 100
 
     def __unicode__(self):
         return self.name
@@ -59,6 +64,7 @@ class AnswerRequest(models.Model):
     answer = models.CharField(max_length=100)
     answer_normalized = models.CharField(max_length=100)
     puzzle = models.ForeignKey('Puzzle')
+    bought_with_points = models.BooleanField(default=False)
     backsolve = models.BooleanField(default=False)
     handled = models.BooleanField(default=False)
     correct = models.BooleanField(default=False)
@@ -114,6 +120,10 @@ class Puzzle(models.Model):
     @property
     def path(self):
         return os.path.join(canonicalize(self.round), canonicalize(self.title))
+
+    @property
+    def answer_normalized(self):
+        return normalize_answer(self.answer)
 
 class UnlockBatch(models.Model):
     batch = models.IntegerField()
