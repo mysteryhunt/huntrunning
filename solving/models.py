@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from hunt.common import safe_link
+from hunt.common import safe_link, safe_unlink
 
 import os
 import re
@@ -49,6 +49,11 @@ class Team(models.Model):
         team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.path)
         safe_link(puzzle_path, team_puzzle_path)
 
+    def unrelease_puzzle(self, puzzle):
+        team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.path)
+        safe_unlink(team_puzzle_path)
+
+
 QUEUES = [("Errata", "errata"), ("General", "general"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
 
 class CallRequest(models.Model):
@@ -76,7 +81,7 @@ def correct(instance=None, **kwargs):
 
 
 @receiver(post_save, sender=AnswerRequest)
-def post_save(sender, instance=None, **kwargs):
+def post_save_puzzle(sender, instance=None, **kwargs):
     team = instance.team
     puzzle = instance.puzzle
     if instance.handled == True and instance.correct() == True and not Solved.objects.filter(team=team, puzzle = puzzle).count():
@@ -124,6 +129,24 @@ class Puzzle(models.Model):
     @property
     def answer_normalized(self):
         return normalize_answer(self.answer)
+
+
+@receiver(post_save, sender=AnswerRequest)
+def fixup_puzzle(sender, instance=None, **kwargs):
+    """Delete and re-release the puzzle where necessary"""
+
+    if not instance.id:
+        return #nothing to do for new puzzles
+
+    old_puzzle = Puzzle.objects.get(id=instance.id)
+
+    batch = UnlockBatch.objects.filter(batch=instance.unlock_batch)
+    points = batch.points
+    for team in teams:
+        if team.score >= points:
+            #the puzzle needs to be pulled and re-released for this team
+            team.unrelease(old_puzzle)
+            team.release(instance)
 
 class UnlockBatch(models.Model):
     batch = models.IntegerField()
