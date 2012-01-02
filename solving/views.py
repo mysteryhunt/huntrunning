@@ -14,7 +14,7 @@ def get_team(request):
     return team
 
 def points(request):
-    js = "points(%d);" % get_team(request).points
+    js = "points(%d);" % get_team(request).score
     return HttpResponse(js, content_type="application/javascript")
 
 def general(request):
