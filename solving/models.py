@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from hunt.common import safe_link
 
@@ -61,14 +61,12 @@ class AnswerRequest(models.Model):
     puzzle = models.ForeignKey('Puzzle')
     backsolve = models.BooleanField(default=False)
     handled = models.BooleanField(default=False)
+    correct = models.BooleanField(default=False)
 
-    def correct(self):
-        if self.answer_normalized == normalize_answer(self.puzzle.answer):
-            return True
-        else:
-            return False
-
-    correct.boolean = True
+@receiver(pre_save, sender=AnswerRequest)
+def correct(instance=None, **kwargs):
+    request = instance
+    request.correct = request.answer_normalized == normalize_answer(request.puzzle.answer)
 
 
 @receiver(post_save, sender=AnswerRequest)
@@ -95,8 +93,17 @@ def do_unlock(answer_request):
     team.release(old_score, team.score)
 
 class Puzzle(models.Model):
-    title = models.CharField(max_length=100, primary_key=True)
+    #this is a hash of the pony name
+    id = models.CharField(max_length=100, primary_key=True)
+
+    #and this is the puzzle's real title
+    title = models.CharField(max_length=100)
     round = models.CharField(max_length=100)
+
+    #this only supports one reuse per puzzle, but that would be
+    #easy to fix
+    matrixed_round = models.CharField(max_length=100)
+
     answer = models.CharField(max_length=100)
     is_meta = models.BooleanField()
     unlock_batch = models.IntegerField()

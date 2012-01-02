@@ -21,7 +21,21 @@
     <td>{{ team.name }}</td>
     <td>{{ team.puzzles_solved }}</td>
     {% for meta in metas %}
-    <td{% if team_round_solves|lookup:team|meta_solved:meta %} style="background-color: green" {% endif %}>{{team_round_solves|lookup:team|puzzles_solved:meta}}</td>
+    {% if team_round_solves|lookup:team %}
+    <td{% if team_round_solves|lookup:team|meta_solved:meta %} style="background-color: green" {% endif %}>{{team_round_solves|lookup:team|puzzles_solved:meta}} / {{team_round_solves|lookup:team|puzzles_total:meta}} 
+
+{% if team_round_solves|lookup:team|meta_solved|matrixed_puzzles_total:meta %}
+( {{team_round_solves|lookup:team|matrixed_puzzles_solved:meta}}  /
+{{team_round_solves|lookup:team|matrixed_puzzles_total:meta}} 
+)
+{% endif %}
+
+
+</td>
+{% else %}
+<td></td>
+{% endif %}
+
     {% endfor %}
   </tr>
 {% endfor %}

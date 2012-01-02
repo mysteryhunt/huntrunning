@@ -17,7 +17,13 @@ class UnlockBatchAdmin(admin.ModelAdmin):
 admin.site.register(UnlockBatch, UnlockBatchAdmin)
 
 class PuzzleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch')
+    list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch', 'wrong_answers', 'solves')
+
+    def wrong_answers(self, puzzle):
+        AnswerRequest.objects.filter(puzzle=puzzle, correct=False).count()
+
+    def solves(self, puzzle):
+        AnswerRequest.objects.filter(puzzle=puzzle, correct=True).count()
 
 admin.site.register(Puzzle, PuzzleAdmin)
 
@@ -58,7 +64,7 @@ class AnswerRequestAdmin(admin.ModelAdmin):
 
      def puzzle_link(self, areq):
          url = urlresolvers.reverse('admin:solving_puzzle_change', args=(areq.puzzle_id,))
-         return '<a href="%s">%s</a>' % (url, areq.puzzle.title)
+         return '<a href="%s">%s</a>' % (url, areq.puzzle.id)
      puzzle_link.allow_tags = True
 
      def handle(self, request, crequests):
