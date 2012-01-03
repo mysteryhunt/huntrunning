@@ -89,6 +89,19 @@ class PhysicalObjectDistributionAdmin(admin.ModelAdmin):
 admin.site.register(PhysicalObjectDistribution, PhysicalObjectDistributionAdmin)
 
 
+class AchievementAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+
+admin.site.register(Achievement, AchievementAdmin)
+
+
+class TeamAchievementAdmin(admin.ModelAdmin):
+    list_display = ('achievement', 'team', 'time')
+    list_filter = ('achievement', 'team')
+
+admin.site.register(TeamAchievement, TeamAchievementAdmin)
+
+
 # this would be nice to have
 # class VisitRequestAdminForm(forms.ModelForm):
 #     class Meta:

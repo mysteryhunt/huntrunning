@@ -56,6 +56,18 @@ class Team(models.Model):
 
 QUEUES = [("Errata", "errata"), ("General", "general"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
 
+class Achievement(models.Model):
+    title = models.CharField(max_length=100)
+
+    def __unicode__(self):
+        return self.title
+
+class TeamAchievement(models.Model):
+    team = models.ForeignKey('Team')
+    achievement = models.ForeignKey('Achievement')
+    time = models.DateTimeField(auto_now=True)
+    reason = models.TextField(max_length=1000)
+
 class CallRequest(models.Model):
     team = models.ForeignKey('Team')
     time = models.DateTimeField(auto_now=True)
