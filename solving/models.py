@@ -3,9 +3,20 @@ from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from hunt.common import safe_link, safe_unlink
+from time import time
 
 import os
 import re
+
+class Meta(models.Model):
+    key = models.CharField(max_length=50, primary_key=True)
+    value = models.CharField(max_length=100)
+
+def get_meta(k):
+    try:
+        return Meta.objects.get(key=k).value
+    except:
+        return None
 
 class Team(models.Model):
     id = models.CharField(max_length=50, primary_key=True)
@@ -16,7 +27,7 @@ class Team(models.Model):
     location = models.CharField(max_length=200)
     score = models.IntegerField(default=0)
     event_points = models.IntegerField(default=0)
-    unlocked = models.IntegerField(default=0)
+    nsolved = models.IntegerField(default=0)
 
     @property
     def answer_event_point_cost(self):
@@ -28,15 +39,35 @@ class Team(models.Model):
     def puzzles_solved(self):
         return self.solved_set.filter(puzzle__is_meta__exact=False).count()
 
-    def release(self, old_score, new_score):
-        unlocked = UnlockBatch.objects.filter(points_required__gt = old_score).filter(points_required__lte = new_score).order_by('points_required')
-        batch = None
-        for batch in unlocked:
+    def release(self):
+        """Release any puzzles that should be unlocked as-of now"""
+        now = time()
+        #get the hunt start time
+        start_time = get_meta('start_time')
+        if start_time is None:
+            return None
+        start_time = int(start_time)
+
+        #get the most-recently-unlocked batch
+        latest_unlock = TeamUnlock.objects.filter(team=self).order_by('-batch__batch')[0]
+
+        #get the remaining unlocks
+        remaining_batches = list(UnlockBatch.objects.filter(batch__gt=latest_unlock.batch.batch).order_by('batch'))
+
+        any_unlocked = False
+        for batch in remaining_batches:
+            unlock_time = start_time + batch.base_time - batch.seconds_early_per_point * self.score
+            if unlock_time > now:
+                break
+
+            TeamUnlock(team=self, batch=batch).save()
+
             puzzles = Puzzle.objects.filter(unlock_batch=batch.batch)
             for puzzle in puzzles:
                 self.release_puzzle(puzzle)
+            any_unlocked = True
 
-        if batch:
+        if any_unlocked:
             #install the release JS file for the latest batch
 
             release_path = os.path.join(settings.PUZZLE_PATH, "release-%s.js" % batch.batch)
@@ -53,6 +84,55 @@ class Team(models.Model):
         team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.path)
         safe_unlink(team_puzzle_path)
 
+    @property
+    def team_path(self):
+        return os.path.join(settings.TEAM_PATH, self.id)
+
+    @property
+    def next_unlock_time(self):
+        """In seconds since Epoch, or -1 if everything is unlocked.
+        Depends on at least one batch being unlocked; the first
+        batch is unlocked by manage.py start.
+        """
+
+        #get the hunt start time
+        start_time = get_meta('start_time')
+        if start_time is None:
+            return None
+        start_time = int(start_time)
+
+        #get the current batch
+        team_unlock = TeamUnlock.objects.filter(team=self).order_by('-batch__batch')[0]
+
+        remaining_batches = list(UnlockBatch.objects.filter(batch__gt=team_unlock.batch.batch).order_by('batch')[:1])
+
+        if not remaining_batches:
+            return -1 #everything is unlocked
+        next_batch = remaining_batches[0]
+        return start_time + next_batch.base_time - next_batch.seconds_early_per_point * self.score
+
+class TeamUnlock(models.Model):
+    team = models.ForeignKey('Team')
+    batch = models.ForeignKey('UnlockBatch')
+    time = models.DateTimeField(auto_now=True)
+
+
+@receiver(post_save, sender=TeamUnlock)
+def post_save_team_unlock(sender, instance=None, **kwargs):
+    write_team_info_js(None, instance.team)
+
+@receiver(post_save, sender=Team)
+def write_team_info_js(sender, instance=None, **kwargs):
+    filename = os.path.join(instance.team_path, "points.js")
+    tmp_filename = filename + ".tmp"
+    js = """
+points(%d);
+next_unlock_time(%s);
+""" % (instance.score, instance.next_unlock_time)
+    f = open(tmp_filename, "w")
+    f.write(js)
+    f.close()
+    os.rename(tmp_filename, filename)
 
 QUEUES = [("Errata", "errata"), ("General", "general"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
 
@@ -91,29 +171,21 @@ def correct(instance=None, **kwargs):
     request = instance
     request.correct = request.answer_normalized == normalize_answer(request.puzzle.answer)
 
-
 @receiver(post_save, sender=AnswerRequest)
 def post_save_puzzle(sender, instance=None, **kwargs):
     team = instance.team
     puzzle = instance.puzzle
-    if instance.handled == True and instance.correct() == True and not Solved.objects.filter(team=team, puzzle = puzzle).count():
+    if instance.handled == True and instance.correct == True and not Solved.objects.filter(team=team, puzzle = puzzle).count():
         solved = Solved(team = team, puzzle = puzzle,
                         bought_with_event_points = False)
         solved.save()
-        do_unlock(instance)
+        team.nsolved += 1
 
-def do_unlock(answer_request):
-    puzzle = answer_request.puzzle
-    team = answer_request.team
-
-    old_score = team.score
-
-    if puzzle.is_meta:
-        team.score += 3
-    else:
-        team.score += 1
-    team.save()
-    team.release(old_score, team.score)
+        #points is actually cubic in number of unlocks, being as sum of
+        #squares
+        team.score += team.nsolved * team.nsolved
+        team.release()
+        team.save()
 
 class Puzzle(models.Model):
     #this is a hash of the pony name
@@ -125,7 +197,7 @@ class Puzzle(models.Model):
 
     #this only supports one reuse per puzzle, but that would be
     #easy to fix
-    matrixed_round = models.CharField(max_length=100)
+    matrixed_round = models.CharField(max_length=100, null=True, blank=True)
 
     answer = models.CharField(max_length=100)
     is_meta = models.BooleanField()
@@ -143,7 +215,7 @@ class Puzzle(models.Model):
         return normalize_answer(self.answer)
 
 
-@receiver(post_save, sender=AnswerRequest)
+@receiver(post_save, sender=Puzzle)
 def fixup_puzzle(sender, instance=None, **kwargs):
     """Delete and re-release the puzzle where necessary"""
 
@@ -152,17 +224,18 @@ def fixup_puzzle(sender, instance=None, **kwargs):
 
     old_puzzle = Puzzle.objects.get(id=instance.id)
 
-    batch = UnlockBatch.objects.filter(batch=instance.unlock_batch)
-    points = batch.points
-    for team in teams:
-        if team.score >= points:
-            #the puzzle needs to be pulled and re-released for this team
-            team.unrelease(old_puzzle)
-            team.release(instance)
+    already_unlocked_batches = TeamUnlock.objects.filter(batch=instance.unlock_batch)
+
+    for unlock in already_unlocked_batches:
+        team = unlock.team
+        #the puzzle needs to be pulled and re-released for this team
+        team.unrelease_puzzle(old_puzzle)
+        team.release_puzzle(instance)
 
 class UnlockBatch(models.Model):
     batch = models.IntegerField()
-    points_required = models.IntegerField()
+    base_time = models.IntegerField()
+    seconds_early_per_point = models.IntegerField()
 
     class Meta:
         verbose_name_plural = "Unlock Batches"

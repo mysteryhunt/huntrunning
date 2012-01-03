@@ -13,10 +13,6 @@ def get_team(request):
     team = Team.objects.get(id=team)
     return team
 
-def points(request):
-    js = "points(%d);" % get_team(request).score
-    return HttpResponse(js, content_type="application/javascript")
-
 def general(request):
     if request.method == "GET":
         return show_general(request)

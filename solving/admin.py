@@ -6,14 +6,14 @@ from django import forms
 from models import *
 
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'phone', 'location', 'score', 'event_points', 'unlocked')
+    list_display = ('id', 'name', 'phone', 'location', 'score', 'event_points', 'nsolved')
     list_editable = ('event_points',)
     
 
 admin.site.register(Team, TeamAdmin)
 
 class UnlockBatchAdmin(admin.ModelAdmin):
-    list_display = ('batch', 'points_required')
+    list_display = ('batch', 'base_time', 'seconds_early_per_point')
 
 admin.site.register(UnlockBatch, UnlockBatchAdmin)
 
