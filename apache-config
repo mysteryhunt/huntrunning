@@ -18,7 +18,10 @@
     Require valid-user
 
     RewriteEngine On
-    RewriteCond %{SCRIPT_FILENAME} !^/(users|dynamic|static)
+
+    RedirectMatch  ^/d/(.*) /dynamic/$1
+
+    RewriteCond %{SCRIPT_FILENAME} !^/(users|dynamic|static|favicon.ico)/
     RewriteCond %{LA-U:REMOTE_USER} !^jasper$
     RewriteRule (.*) /users/%{LA-U:REMOTE_USER}/$1
 

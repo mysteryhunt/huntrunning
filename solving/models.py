@@ -161,7 +161,7 @@ class AnswerRequest(models.Model):
     answer = models.CharField(max_length=100)
     answer_normalized = models.CharField(max_length=100)
     puzzle = models.ForeignKey('Puzzle')
-    bought_with_points = models.BooleanField(default=False)
+    bought_with_event_points = models.BooleanField(default=False)
     backsolve = models.BooleanField(default=False)
     handled = models.BooleanField(default=False)
     correct = models.BooleanField(default=False)
@@ -172,12 +172,12 @@ def correct(instance=None, **kwargs):
     request.correct = request.answer_normalized == normalize_answer(request.puzzle.answer)
 
 @receiver(post_save, sender=AnswerRequest)
-def post_save_puzzle(sender, instance=None, **kwargs):
+def post_save_answer_request(sender, instance=None, **kwargs):
     team = instance.team
     puzzle = instance.puzzle
     if instance.handled == True and instance.correct == True and not Solved.objects.filter(team=team, puzzle = puzzle).count():
         solved = Solved(team = team, puzzle = puzzle,
-                        bought_with_event_points = False)
+                        bought_with_event_points = instance.bought_with_event_points)
         solved.save()
         team.nsolved += 1
 
@@ -263,6 +263,11 @@ class PhysicalObjectDistribution(models.Model):
 
     class Meta:
         unique_together = ("team", "physical_object")
+
+class EventPointToken(models.Model):
+    """An event point token used by a team"""
+    team = models.ForeignKey("Team")
+    token = models.CharField(max_length=22)
 
 #this places strong limits on what answers are possible.
 def normalize_answer(answer):

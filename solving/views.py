@@ -1,10 +1,16 @@
+from django.db.models import F
 from django.conf import settings
 from django.http import HttpResponse
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
+from hashlib import md5
 from hunt.solving.models import *
+
+import base64
+import Crypto.Cipher.AES as aes
+
 
 def get_team(request):
     team = request.META.get('REMOTE_USER', None)
@@ -24,6 +30,32 @@ def callin(request):
         return show_callin(request)
     else:
         return do_callin(request)
+
+def award(request):
+    team = get_team(request)
+    encoded_token = str(request.GET["t"])
+    token = base64.urlsafe_b64decode(encoded_token + "==")
+
+    #why reencode what I just decoded?  Because b64 allows
+    #multiple encodings of the same data (really!), and we 
+    #need the canonical encoding
+    encoded_token = base64.urlsafe_b64encode(token)[:-1]
+
+    #has token been used yet?
+    if EventPointToken.objects.filter(token=encoded_token).count():
+        return HttpResponse("Already used or invalid")
+
+    encryptor = aes.new(md5(settings.SECRET_KEY).digest())
+    result = encryptor.decrypt(token)
+    try:
+        points = int(result[:4])
+    except:
+        return HttpResponse("Already used or invalid")
+
+    EventPointToken(team=team, token=encoded_token).save()
+    response = "OK, event points added.  You now have %s %r" % (team.event_points + points, encoded_token)
+    Team.objects.filter(id=team.id).update(event_points=F('event_points') + points)
+    return HttpResponse(response)
 
 def show_callin(request, extra={}):
     team = get_team(request)
@@ -47,7 +79,7 @@ def do_callin(request):
         else:
             team.event_points -= team.answer_event_point_cost
             team.save()
-            AnswerRequest(team=team, puzzle=puzzle, answer=puzzle.answer,answer_normalized=puzzle.answer_normalized, bought_with_points=True).save()
+            AnswerRequest(team=team, puzzle=puzzle, answer=puzzle.answer,answer_normalized=puzzle.answer_normalized, bought_with_event_points=True).save()
     else:
 
         answer = request.POST['answer']
