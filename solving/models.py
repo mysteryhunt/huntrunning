@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save, pre_save
@@ -114,7 +115,7 @@ class Team(models.Model):
 class TeamUnlock(models.Model):
     team = models.ForeignKey('Team')
     batch = models.ForeignKey('UnlockBatch')
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now_add=True)
 
 
 @receiver(post_save, sender=TeamUnlock)
@@ -160,19 +161,20 @@ class Achievement(models.Model):
 class TeamAchievement(models.Model):
     team = models.ForeignKey('Team')
     achievement = models.ForeignKey('Achievement')
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now_add=True)
     reason = models.TextField(max_length=1000)
 
 class CallRequest(models.Model):
     team = models.ForeignKey('Team')
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now_add=True)
     queue = models.CharField(choices=QUEUES, max_length=100)
     handled = models.BooleanField(default=False)
     reason = models.TextField(max_length=1000)
+    time_handled = models.DateTimeField()
 
 class AnswerRequest(models.Model):
     team = models.ForeignKey('Team')
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now_add=True)
     answer = models.CharField(max_length=100)
     answer_normalized = models.CharField(max_length=100)
     puzzle = models.ForeignKey('Puzzle')
@@ -180,11 +182,20 @@ class AnswerRequest(models.Model):
     backsolve = models.BooleanField(default=False)
     handled = models.BooleanField(default=False)
     correct = models.BooleanField(default=False)
+    time_handled = models.DateTimeField()
 
 @receiver(pre_save, sender=AnswerRequest)
-def correct(instance=None, **kwargs):
+def pre_save_answer_request(instance=None, **kwargs):
     request = instance
     request.correct = request.answer_normalized == request.puzzle.answer_normalized
+    if request.handled:
+        request.time_handled = datetime.now()
+
+@receiver(pre_save, sender=CallRequest)
+def pre_save_call_request(instance=None, **kwargs):
+    request = instance
+    if request.handled:
+        request.time_handled = datetime.now()
 
 @receiver(post_save, sender=AnswerRequest)
 def post_save_answer_request(sender, instance=None, **kwargs):
@@ -258,7 +269,7 @@ class UnlockBatch(models.Model):
 class Solved(models.Model):
     team = models.ForeignKey('Team')
     puzzle = models.ForeignKey('Puzzle')
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now_add=True)
     bought_with_event_points = models.BooleanField()
 
     unique_together = (("team", "puzzle"),)
@@ -274,7 +285,7 @@ class PhysicalObjectDistribution(models.Model):
     """A team has been given the object"""
     team = models.ForeignKey('Team')
     physical_object = models.ForeignKey('PhysicalObject')
-    time = models.DateTimeField(auto_now=True)
+    time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("team", "physical_object")

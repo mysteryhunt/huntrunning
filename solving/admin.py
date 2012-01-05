@@ -35,11 +35,11 @@ team_link.allow_tags = True
 
 
 class CallRequestAdmin(admin.ModelAdmin):
-     list_display = ('team', 'time', 'queue', 'handled', 'reason')
+     list_display = ('team', 'time', 'queue', 'handled', 'time_handled', 'reason')
      list_filter = ('queue', 'team', 'handled')
      list_editable = ('handled',)
 
-     fields = ('team_link', 'queue', 'handled', 'reason')
+     fields = ('team_link', 'queue', 'handled', 'time_handled', 'reason')
      readonly_fields = ('team_link',)
      actions = ('handle',)
 
@@ -54,10 +54,10 @@ class CallRequestAdmin(admin.ModelAdmin):
 admin.site.register(CallRequest, CallRequestAdmin)
 
 class AnswerRequestAdmin(admin.ModelAdmin):
-     list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'backsolve')
+     list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve')
      list_filter = ('team', 'handled', 'puzzle')
      list_editable = ('handled',)
-     fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'handled', 'backsolve')
+     fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
      readonly_fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'backsolve')
      actions = ('handle',)
 
