@@ -8,6 +8,7 @@ from time import time
 
 import os
 import re
+import json
 
 class Meta(models.Model):
     key = models.CharField(max_length=50, primary_key=True)
@@ -154,6 +155,7 @@ QUEUES = [("Errata", "errata"), ("General", "general"), ("Pick up", "objects"), 
 
 class Achievement(models.Model):
     title = models.CharField(max_length=100)
+    public = models.BooleanField()
 
     def __unicode__(self):
         return self.title
@@ -196,6 +198,24 @@ def pre_save_call_request(instance=None, **kwargs):
     request = instance
     if request.handled:
         request.time_handled = datetime.now()
+
+@receiver(post_save, sender=TeamAchievement)
+def post_save_team_achievement(sender, instance=None, **kwargs):
+    achievement_js_path = os.path.join(settings.PUZZLE_PATH, "achievements.js")
+    achievements = {}
+    for achievement in Achievement.objects.all():
+        if not achievement.public: 
+            next
+        teams = []
+        achievements[achievement.title] = teams
+        for team_achievement in achievement.teamachievement_set.all():
+            teams.append(team_achievement.team.name)
+
+    f = open(achievement_js_path + ".tmp", "w")
+    print >>f, json.dumps(achievements)
+    os.rename(achievement_js_path + ".tmp", achievement_js_path)
+    
+
 
 @receiver(post_save, sender=AnswerRequest)
 def post_save_answer_request(sender, instance=None, **kwargs):
