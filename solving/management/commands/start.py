@@ -22,7 +22,7 @@ This command will overwrite the htpasswd file and index files.
 """
 
     def handle(self, *args, **options):
-        htpasswd_file = open(settings.HTPASSWD_PATH, "w")
+        htpasswd_file = open(settings.HTPASSWD_PATH + ".tmp", "w")
 
         now = str(int(time()))
         try:
@@ -33,8 +33,8 @@ This command will overwrite the htpasswd file and index files.
 
         meta.save()
 
-        initial_batch = UnlockBatch.objects.order_by("batch")[:1]
-        if initial_batch is None:
+        initial_batch = list(UnlockBatch.objects.order_by("batch")[:1])
+        if not initial_batch:
             print >>sys.stderr, "Need some unlock batches to start the hunt"
             return
         else:
@@ -66,3 +66,5 @@ This command will overwrite the htpasswd file and index files.
         salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
         htpasswd_file.write("%s:%s\n" % (settings.ADMIN_NAME, crypt.crypt(settings.ADMIN_PASSWORD, salt)))
         htpasswd_file.close()
+
+        os.rename(settings.HTPASSWD_PATH + ".tmp", settings.HTPASSWD_PATH)
