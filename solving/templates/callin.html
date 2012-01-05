@@ -1,3 +1,9 @@
+{% if solved %}
+
+Answer: <b>{{ answer }}</b>
+
+{% else %}
+
 <form action="callin" method="POST">
 {% csrf_token %}
 
@@ -17,7 +23,7 @@ Did you backsolve this answer? <input type="checkbox" name="backsolve" value="1"
 Previous answers:
 <ul>
 {% for answer in past_answers %}
-<li>{% if not answer.handled %}(just called in){% endif %}{{ answer.answer }}</li>
+<li>{% if not answer.handled %}(just called in) {% endif %}{{ answer.answer }}</li>
 {% endfor %}
 </ul>
 <br/>
@@ -29,3 +35,5 @@ You have {{team.event_points}} event points; buying an answer costs {{team.answe
 <input type="submit" value="Buy this answer with event points" name="action"><br/>
 {% endif %}
 </form>
+
+{% endif %}

@@ -58,9 +58,15 @@ def award(request):
     return HttpResponse(response)
 
 def show_callin(request, extra={}):
+
     team = get_team(request)
     puzzle = Puzzle.objects.get(id=request.REQUEST["puzzle"])
-    past_answers = AnswerRequest.objects.filter(team=team, puzzle=puzzle)
+
+    solved = Solved.objects.filter(team=team,puzzle=puzzle).count()
+    if solved:
+        answer = puzzle.answer
+    else:
+        past_answers = AnswerRequest.objects.filter(team=team, puzzle=puzzle)
 
     locals().update(extra)
 
@@ -106,4 +112,5 @@ def do_general(request):
     queue = request.POST['queue']
     reason = request.POST['reason']
     CallRequest(team=team, queue=queue, reason=reason).save()
+    queuelength = CallRequest.objects.filter(handled=False).count()
     return render_to_response('general-received.html', locals(), context_instance=RequestContext(request))

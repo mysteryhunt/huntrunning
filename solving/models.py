@@ -123,6 +123,16 @@ def post_save_team_unlock(sender, instance=None, **kwargs):
 
 @receiver(post_save, sender=Team)
 def write_team_info_js(sender, instance=None, **kwargs):
+    if get_meta("start_time"):
+        #the hunt is started
+        if not TeamUnlock.objects.filter(team=instance).count():
+            #but this team has not unlocked anything.
+            #unlock the first batch for them.
+            #the hunt cannot be started unless at least one unlock batch exists
+            initial_batch = UnlockBatch.objects.order_by("batch")[0]
+            TeamUnlock(team=instance, batch=initial_batch).save()
+
+    #now create the team info JS file
     try:
         os.mkdir(instance.team_path)
     except OSError:
@@ -174,7 +184,7 @@ class AnswerRequest(models.Model):
 @receiver(pre_save, sender=AnswerRequest)
 def correct(instance=None, **kwargs):
     request = instance
-    request.correct = request.answer_normalized == normalize_answer(request.puzzle.answer)
+    request.correct = request.answer_normalized == request.puzzle.answer_normalized
 
 @receiver(post_save, sender=AnswerRequest)
 def post_save_answer_request(sender, instance=None, **kwargs):
