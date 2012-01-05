@@ -65,7 +65,7 @@ class AnswerRequestAdmin(admin.ModelAdmin):
 
      def puzzle_link(self, areq):
          url = urlresolvers.reverse('admin:solving_puzzle_change', args=(areq.puzzle_id,))
-         return '<a href="%s">%s</a>' % (url, areq.puzzle.id)
+         return '<a href="%s">%s</a>' % (url, areq.puzzle.title)
      puzzle_link.allow_tags = True
 
      def handle(self, request, crequests):
