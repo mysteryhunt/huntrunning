@@ -17,7 +17,7 @@ Did you backsolve this answer? <input type="checkbox" name="backsolve" value="1"
 Previous answers:
 <ul>
 {% for answer in past_answers %}
-<li {% if not answer.handled %}class="pending"{% endif %} >{{ answer.answer }}</li>
+<li>{% if not answer.handled %}(just called in){% endif %}{{ answer.answer }}</li>
 {% endfor %}
 </ul>
 <br/>
