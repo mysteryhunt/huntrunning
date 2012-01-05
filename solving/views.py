@@ -90,6 +90,8 @@ def do_callin(request):
 
         backsolve = 'backsolve' in request.POST
         AnswerRequest(team=team, puzzle=puzzle, answer=answer,answer_normalized=answer_normalized, backsolve=backsolve).save()
+
+    queuelength = AnswerRequest.objects.filter(handled=False).count()
     return render_to_response('called.html', locals(), context_instance=RequestContext(request))
 
 
