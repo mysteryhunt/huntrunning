@@ -24,7 +24,7 @@ Previous answers:
 
 <input type="submit" value="Call in" name="action"><br/>
 
-You have {{team.event_points}} event points; an answer costs {{team.answer_event_point_cost}}.  <br/>
+You have {{team.event_points}} event points; buying an answer costs {{team.answer_event_point_cost}}.  <br/>
 {% if team.event_points >= team.answer_event_point_cost %}
 <input type="submit" value="Buy this answer with event points" name="action"><br/>
 {% endif %}
