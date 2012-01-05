@@ -123,6 +123,11 @@ def post_save_team_unlock(sender, instance=None, **kwargs):
 
 @receiver(post_save, sender=Team)
 def write_team_info_js(sender, instance=None, **kwargs):
+    try:
+        os.mkdir(instance.team_path)
+    except OSError:
+        #already exists
+        pass
     filename = os.path.join(instance.team_path, "points.js")
     tmp_filename = filename + ".tmp"
     js = """
