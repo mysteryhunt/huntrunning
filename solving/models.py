@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -173,6 +174,7 @@ class CallRequest(models.Model):
     handled = models.BooleanField(default=False)
     reason = models.TextField(max_length=1000)
     time_handled = models.DateTimeField()
+    owner = models.ForeignKey(User, null=True)
 
 class AnswerRequest(models.Model):
     team = models.ForeignKey('Team')
@@ -185,6 +187,7 @@ class AnswerRequest(models.Model):
     handled = models.BooleanField(default=False)
     correct = models.BooleanField(default=False)
     time_handled = models.DateTimeField()
+    owner = models.ForeignKey(User, null=True)
 
 @receiver(pre_save, sender=AnswerRequest)
 def pre_save_answer_request(instance=None, **kwargs):

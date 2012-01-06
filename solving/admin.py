@@ -1,8 +1,9 @@
 from django.conf import settings
 from django.contrib import admin
+#from django.contrib.admin import SimpleListFilter
 from django.core import urlresolvers
+from django.db.models import Q
 from django import forms
-
 from models import *
 
 class TeamAdmin(admin.ModelAdmin):
@@ -33,17 +34,40 @@ def team_link(self, areq):
     return '<a href="%s">%s</a> at %s' % (url, areq.team.name, areq.team.phone)
 team_link.allow_tags = True
 
+# Aargh, this is only supported in Django 1.4 which is not yet out
+# class TakenFilter(SimpleListFilter):
+#     title = _('Owner')
+
+#     parameter_name = 'owner'
+
+#     def lookups(self, request, model_admin):
+#         return (
+#             ('mine_and_no_owner', _('mine and untaken')),
+#             ('all', _('all')),
+#         )
+
+#     def queryset(self, request, queryset):
+#         team = get_team()
+#         if self.value() == 'mine_and_no_owner':
+#             return queryset.filter(owner=team)
+#         if self.value() == 'all':
+#             return queryset
+
 
 class CallRequestAdmin(admin.ModelAdmin):
-     list_display = ('team', 'time', 'queue', 'handled', 'time_handled', 'reason')
+     list_display = ('team', 'time', 'queue', 'handled', 'time_handled', 'reason', 'owner')
      list_filter = ('queue', 'team', 'handled')
      list_editable = ('handled',)
 
-     fields = ('team_link', 'queue', 'handled', 'time_handled', 'reason')
-     readonly_fields = ('team_link',)
-     actions = ('handle',)
+     fields = ('team_link', 'owner', 'queue', 'handled', 'time_handled', 'reason')
+     readonly_fields = ('team_link', 'owner', )
+     actions = ('handle', 'claim')
 
      team_link = team_link
+
+     def claim(self, request, crequests):
+         crequests.filter(owner=None).update(owner=request.user)
+     claim.short_description = "Claim requests"
 
      def handle(self, request, crequests):
          for crequest in crequests:
@@ -51,15 +75,21 @@ class CallRequestAdmin(admin.ModelAdmin):
              crequest.save()
      handle.short_description = "Mark request as handled"
 
+     def queryset(self, request):
+         qs = super(CallRequestAdmin, self).queryset(request)
+         if request.user.is_superuser:
+             return qs
+         return qs.filter(Q(owner=request.user) | Q(owner=None))
+
 admin.site.register(CallRequest, CallRequestAdmin)
 
 class AnswerRequestAdmin(admin.ModelAdmin):
-     list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve')
+     list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner')
      list_filter = ('team', 'handled', 'puzzle')
      list_editable = ('handled',)
-     fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
-     readonly_fields = ('team_link', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'backsolve')
-     actions = ('handle',)
+     fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
+     readonly_fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'backsolve')
+     actions = ('handle', 'claim')
 
      team_link = team_link
 
@@ -68,11 +98,21 @@ class AnswerRequestAdmin(admin.ModelAdmin):
          return '<a href="%s">%s</a>' % (url, areq.puzzle.title)
      puzzle_link.allow_tags = True
 
+     def claim(self, request, crequests):
+         crequests.filter(owner=None).update(owner=request.user)
+     claim.short_description = "Claim requests"
+
      def handle(self, request, crequests):
          for crequest in crequests:
              crequest.handled = True
              crequest.save()
      handle.short_description = "Mark request as handled"
+
+     def queryset(self, request):
+         qs = super(AnswerRequestAdmin, self).queryset(request)
+         if request.user.is_superuser:
+             return qs
+         return qs.filter(Q(owner=request.user) | Q(owner=None))
 
 admin.site.register(AnswerRequest, AnswerRequestAdmin)
 
