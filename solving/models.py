@@ -212,7 +212,7 @@ def post_save_team_achievement(sender, instance=None, **kwargs):
             teams.append(team_achievement.team.name)
 
     f = open(achievement_js_path + ".tmp", "w")
-    print >>f, json.dumps(achievements)
+    print >>f, json.dumps("achievements(%s);" % achievements)
     os.rename(achievement_js_path + ".tmp", achievement_js_path)
     
 
