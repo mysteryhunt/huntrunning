@@ -9,7 +9,7 @@ import qrencode
 import uuid
 import base64
 
-denominations = [(5, 10), (10, 20), (20, 20), (50, 10)]
+denominations = [(5, 10), (10, 20), (20, 20), (50, 10), (60, 10), (80, 10)]
 code_dir = "/tmp/codes"
 
 ROWS_PER_PAGE=5
