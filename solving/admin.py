@@ -2,14 +2,26 @@ from django.conf import settings
 from django.contrib import admin
 #from django.contrib.admin import SimpleListFilter
 from django.core import urlresolvers
-from django.db.models import Q
+from django.db.models import Q, F
 from django import forms
 from models import *
 
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'phone', 'location', 'score', 'event_points', 'nsolved')
+    list_display = ('id', 'name', 'phone', 'location', 'score', 'event_points', 'number_solved')
     list_editable = ('event_points',)
-    
+
+    actions = ['add_point']
+
+    def add_point(self, request, teams):
+        teams.update(nsolved=F('nsolved') + 1, score=F('score') + (F('nsolved') + 1) * (F('nsolved') + 1))
+        for team in teams:
+            team = Team.objects.get(id=team.id) #reload team to get new score/nsolved
+            team.release()
+
+    add_point.short_description = "Add one point to team"
+
+    def number_solved(self, team):
+        return team.nsolved #just for naming purposes
 
 admin.site.register(Team, TeamAdmin)
 
@@ -55,64 +67,64 @@ team_link.allow_tags = True
 
 
 class CallRequestAdmin(admin.ModelAdmin):
-     list_display = ('team', 'time', 'queue', 'handled', 'time_handled', 'reason', 'owner')
-     list_filter = ('queue', 'team', 'handled')
-     list_editable = ('handled',)
+    list_display = ('team', 'time', 'queue', 'handled', 'time_handled', 'reason', 'owner')
+    list_filter = ('queue', 'team', 'handled')
+    list_editable = ('handled',)
 
-     fields = ('team_link', 'owner', 'queue', 'handled', 'time_handled', 'reason')
-     readonly_fields = ('team_link', 'owner', )
-     actions = ('handle', 'claim')
+    fields = ('team_link', 'owner', 'queue', 'handled', 'time_handled', 'reason')
+    readonly_fields = ('team_link', 'owner', )
+    actions = ('handle', 'claim')
 
-     team_link = team_link
+    team_link = team_link
 
-     def claim(self, request, crequests):
-         crequests.filter(owner=None).update(owner=request.user)
-     claim.short_description = "Claim requests"
+    def claim(self, request, crequests):
+        crequests.filter(owner=None).update(owner=request.user)
+    claim.short_description = "Claim requests"
 
-     def handle(self, request, crequests):
-         for crequest in crequests:
-             crequest.handled = True
-             crequest.save()
-     handle.short_description = "Mark request as handled"
+    def handle(self, request, crequests):
+        for crequest in crequests:
+            crequest.handled = True
+            crequest.save()
+    handle.short_description = "Mark request as handled"
 
-     def queryset(self, request):
-         qs = super(CallRequestAdmin, self).queryset(request)
-         if request.user.is_superuser:
-             return qs
-         return qs.filter(Q(owner=request.user) | Q(owner=None))
+    def queryset(self, request):
+        qs = super(CallRequestAdmin, self).queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(Q(owner=request.user) | Q(owner=None))
 
 admin.site.register(CallRequest, CallRequestAdmin)
 
 class AnswerRequestAdmin(admin.ModelAdmin):
-     list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner')
-     list_filter = ('team', 'handled', 'puzzle')
-     list_editable = ('handled',)
-     fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
-     readonly_fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'backsolve')
-     actions = ('handle', 'claim')
+    list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner')
+    list_filter = ('team', 'handled', 'puzzle')
+    list_editable = ('handled',)
+    fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
+    readonly_fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'backsolve')
+    actions = ('handle', 'claim')
 
-     team_link = team_link
+    team_link = team_link
 
-     def puzzle_link(self, areq):
-         url = urlresolvers.reverse('admin:solving_puzzle_change', args=(areq.puzzle_id,))
-         return '<a href="%s">%s</a>' % (url, areq.puzzle.title)
-     puzzle_link.allow_tags = True
+    def puzzle_link(self, areq):
+        url = urlresolvers.reverse('admin:solving_puzzle_change', args=(areq.puzzle_id,))
+        return '<a href="%s">%s</a>' % (url, areq.puzzle.title)
+    puzzle_link.allow_tags = True
 
-     def claim(self, request, crequests):
-         crequests.filter(owner=None).update(owner=request.user)
-     claim.short_description = "Claim requests"
+    def claim(self, request, crequests):
+        crequests.filter(owner=None).update(owner=request.user)
+    claim.short_description = "Claim requests"
 
-     def handle(self, request, crequests):
-         for crequest in crequests:
-             crequest.handled = True
-             crequest.save()
-     handle.short_description = "Mark request as handled"
+    def handle(self, request, crequests):
+        for crequest in crequests:
+            crequest.handled = True
+            crequest.save()
+    handle.short_description = "Mark request as handled"
 
-     def queryset(self, request):
-         qs = super(AnswerRequestAdmin, self).queryset(request)
-         if request.user.is_superuser:
-             return qs
-         return qs.filter(Q(owner=request.user) | Q(owner=None))
+    def queryset(self, request):
+        qs = super(AnswerRequestAdmin, self).queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(Q(owner=request.user) | Q(owner=None))
 
 admin.site.register(AnswerRequest, AnswerRequestAdmin)
 
@@ -148,7 +160,7 @@ admin.site.register(TeamAchievement, TeamAchievementAdmin)
 #         model = VisitRequest
 
 #     visit_time = forms....(TODO:datetime)
-    
+
 # class VisitRequestAdmin(admin.ModelAdmin):
 #     list_display = ('team', 'request_time', 'reason', 'visit_time')
 #     list_filter = ('team',)
