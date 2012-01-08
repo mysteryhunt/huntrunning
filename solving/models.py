@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from hunt.common import safe_link, safe_unlink
+from hunt.common import safe_link, safe_unlink, safe_mkdirs
 from time import time
 
 import os
@@ -59,7 +59,7 @@ class Team(models.Model):
 
         any_unlocked = False
         for batch in remaining_batches:
-            unlock_time = start_time + batch.base_time - batch.seconds_early_per_point * self.score
+            unlock_time = start_time + batch.base_time - batch.minutes_early_per_point * self.score * 60
             if unlock_time > now:
                 break
 
@@ -79,9 +79,24 @@ class Team(models.Model):
             safe_link(release_path, team_release_path)
 
     def release_puzzle(self, puzzle):
-        puzzle_path = os.path.join(settings.PUZZLE_PATH, puzzle.path)
-        team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.path)
-        safe_link(puzzle_path, team_puzzle_path)
+        if puzzle.is_meta:
+            #we need to link in all the files in the round.
+            puzzle_path = os.path.join(settings.PUZZLE_PATH, puzzle.round_path)
+            team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.round_path)
+            for filename in os.listdir(puzzle_path):
+                puzzle_filename = os.path.join(puzzle_path, filename)
+
+                #... but not the directories, except for
+                #investigators_report, which is the meta for critic rounds
+                if os.path.isdir(puzzle_filename) and not filename == "investigators_report":
+                    continue
+                team_puzzle_filename = os.path.join(team_puzzle_path, filename)
+                safe_link(puzzle_filename, team_puzzle_filename)
+
+        else:
+            puzzle_path = os.path.join(settings.PUZZLE_PATH, puzzle.path)
+            team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.path)
+            safe_link(puzzle_path, team_puzzle_path)
 
     def unrelease_puzzle(self, puzzle):
         team_puzzle_path = os.path.join(settings.TEAM_PATH, self.id, puzzle.path)
@@ -112,7 +127,7 @@ class Team(models.Model):
         if not remaining_batches:
             return -1 #everything is unlocked
         next_batch = remaining_batches[0]
-        return start_time + next_batch.base_time - next_batch.seconds_early_per_point * self.score
+        return start_time + next_batch.base_time - next_batch.minutes_early_per_point * self.score * 60
 
 class TeamUnlock(models.Model):
     team = models.ForeignKey('Team')
@@ -126,6 +141,9 @@ def post_save_team_unlock(sender, instance=None, **kwargs):
 
 @receiver(post_save, sender=Team)
 def write_team_info_js(sender, instance=None, **kwargs):
+    #if the team has no directory, make one
+    safe_mkdirs(instance.team_path)
+
     if get_meta("start_time"):
         #the hunt is started
         if not TeamUnlock.objects.filter(team=instance).count():
@@ -135,22 +153,22 @@ def write_team_info_js(sender, instance=None, **kwargs):
             initial_batch = UnlockBatch.objects.order_by("batch")[0]
             TeamUnlock(team=instance, batch=initial_batch).save()
 
-    #now create the team info JS file
-    try:
-        os.mkdir(instance.team_path)
-    except OSError:
-        #already exists
-        pass
-    filename = os.path.join(instance.team_path, "points.js")
-    tmp_filename = filename + ".tmp"
-    js = """
-points(%d);
-next_unlock_time(%s);
-""" % (instance.score, instance.next_unlock_time)
-    f = open(tmp_filename, "w")
-    f.write(js)
-    f.close()
-    os.rename(tmp_filename, filename)
+        #now create the team info JS file
+        try:
+            os.mkdir(instance.team_path)
+        except OSError:
+            #already exists
+            pass
+        filename = os.path.join(instance.team_path, "points.js")
+        tmp_filename = filename + ".tmp"
+        js = """
+    points(%d);
+    next_unlock_time(%s);
+    """ % (instance.score, instance.next_unlock_time)
+        f = open(tmp_filename, "w")
+        f.write(js)
+        f.close()
+        os.rename(tmp_filename, filename)
 
 QUEUES = [("Errata", "errata"), ("General", "general"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
 
@@ -260,6 +278,10 @@ class Puzzle(models.Model):
         return os.path.join(canonicalize(self.round), canonicalize(self.title))
 
     @property
+    def round_path(self):
+        return os.path.join(canonicalize(self.round))
+
+    @property
     def answer_normalized(self):
         return normalize_answer(self.answer)
 
@@ -284,7 +306,7 @@ def fixup_puzzle(sender, instance=None, **kwargs):
 class UnlockBatch(models.Model):
     batch = models.IntegerField()
     base_time = models.IntegerField()
-    seconds_early_per_point = models.IntegerField()
+    minutes_early_per_point = models.FloatField()
 
     class Meta:
         verbose_name_plural = "Unlock Batches"

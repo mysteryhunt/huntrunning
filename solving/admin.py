@@ -26,7 +26,7 @@ class TeamAdmin(admin.ModelAdmin):
 admin.site.register(Team, TeamAdmin)
 
 class UnlockBatchAdmin(admin.ModelAdmin):
-    list_display = ('batch', 'base_time', 'seconds_early_per_point')
+    list_display = ('batch', 'base_time', 'minutes_early_per_point')
 
 admin.site.register(UnlockBatch, UnlockBatchAdmin)
 
