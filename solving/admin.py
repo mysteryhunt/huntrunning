@@ -32,6 +32,7 @@ admin.site.register(UnlockBatch, UnlockBatchAdmin)
 
 class PuzzleAdmin(admin.ModelAdmin):
     list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch', 'wrong_answers', 'solves')
+    list_filter = ('round', 'is_meta', 'unlock_batch')
 
     def wrong_answers(self, puzzle):
         AnswerRequest.objects.filter(puzzle=puzzle, correct=False).count()
