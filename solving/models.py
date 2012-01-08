@@ -52,10 +52,15 @@ class Team(models.Model):
         start_time = int(start_time)
 
         #get the most-recently-unlocked batch
-        latest_unlock = TeamUnlock.objects.filter(team=self).order_by('-batch__batch')[0]
+        latest_unlock = list(TeamUnlock.objects.filter(team=self).order_by('-batch__batch')[:1])
+
+        if latest_unlock:
+            last_batch = latest_unlock[0].batch.batch
+        else:
+            last_batch = 0
 
         #get the remaining unlocks
-        remaining_batches = list(UnlockBatch.objects.filter(batch__gt=latest_unlock.batch.batch).order_by('batch'))
+        remaining_batches = list(UnlockBatch.objects.filter(batch__gt=last_batch).order_by('batch'))
 
         any_unlocked = False
         for batch in remaining_batches:
