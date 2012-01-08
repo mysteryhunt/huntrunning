@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from hunt.solving.models import Team, TeamUnlock, Meta, EventPointToken
+from hunt.solving.models import *
 
 import os
 import subprocess
@@ -9,11 +9,12 @@ class Command(BaseCommand):
     help = """Reset the hunt status"""
 
     def handle(self, *args, **options):
+        Solved.objects.all().delete()
         TeamUnlock.objects.all().delete()
         EventPointToken.objects.all().delete()
 
         for team in Team.objects.all():
-            team.points = 0
+            team.score = 0
             team.nsolves = 0
             team.event_points = 0
             team.save()
