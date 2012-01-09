@@ -30,7 +30,7 @@
 	<Directory /home/novalis/hunt/b/teams/>
         Order allow,deny
         Allow from all
-
+		    AllowOverride AuthConfig
 	</Directory>
 
   Alias /users/ /home/novalis/hunt/b/teams/

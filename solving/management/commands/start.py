@@ -76,6 +76,16 @@ This command will overwrite the htpasswd file and index files.
             print >>f, "TEAM_AUTH = %s;" % json.dumps(hmac_with_server_key("team:"+team.id))
             f.close()
 
+            # .htaccess
+            team_file_path = os.path.join(team_path, ".htaccess")
+            htaccess_file = open(team_file_path, "w")
+            print >>htaccess_file, """
+AuthUserFile %s
+AuthName "Mystery Hunt"
+AuthType Basic
+Require User %s""" % (settings.HTPASSWD_PATH, team.id)
+            htaccess_file.close()
+
             # htpasswd stuff
             salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
             htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
