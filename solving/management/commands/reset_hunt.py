@@ -11,6 +11,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         Solved.objects.all().delete()
         TeamUnlock.objects.all().delete()
+        CallRequest.objects.all().delete()
+        AnswerRequest.objects.all().delete()
         EventPointToken.objects.all().delete()
 
         for team in Team.objects.all():
