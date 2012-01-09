@@ -12,7 +12,9 @@ class Command(BaseCommand):
         teamcsv = args[0]
         f = csv.reader(open(teamcsv))
         for line in f:
-            _, name, email, _, username, password, _, _, _, _, phones = line[:11]
+            if len(line) < 18:
+                line = line + [""] * (18-len(line))
+            _, name, email, _, username, password, _, _, _, _, _, _, _, _, _, _, _, phones = line[:18]
             if username == "Username":
                 #header
                 continue
@@ -20,4 +22,6 @@ class Command(BaseCommand):
             team.save()
             team.phone_set.all().delete()
             for phone in phones.split("\n"):
+                if not phone:
+                    continue
                 Phone(team=team,phone=phone).save()
