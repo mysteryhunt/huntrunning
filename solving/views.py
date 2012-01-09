@@ -85,6 +85,9 @@ def do_callin(request):
             message = "Not enough points"
             return show_callin(request, dict(message=message, puzzle=puzzled))
         else:
+            if puzzle.is_meta:
+                return HttpResponse("Can't buy metapuzzle answers")
+
             team.event_points -= team.answer_event_point_cost
             team.save()
             AnswerRequest(team=team,
