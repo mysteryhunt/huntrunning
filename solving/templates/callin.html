@@ -16,6 +16,15 @@ Answer: <b>{{ answer }}</b>
 Call in an answer for <b>{{ puzzle.title }}</b>:
 <br/>
 <input type="hidden" name="puzzle" value="{{ puzzle.id }}" />
+
+Call back number:<br/>
+<select name="phone">
+{% for phone in team.phone_set.all %}
+<option value="{{phone.id}}">{{ phone.phone }}</option>
+{% endfor %}
+</select>
+
+Answer:<br/>
 <input type="text" name="answer" /><br/>
 Did you backsolve this answer? <input type="checkbox" name="backsolve" value="1" /><br/>
 

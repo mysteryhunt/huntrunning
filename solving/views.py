@@ -37,7 +37,7 @@ def award(request):
     token = base64.urlsafe_b64decode(encoded_token + "==")
 
     #why reencode what I just decoded?  Because b64 allows
-    #multiple encodings of the same data (really!), and we 
+    #multiple encodings of the same data (really!), and we
     #need the canonical encoding
     encoded_token = base64.urlsafe_b64encode(token)[:-1]
 
@@ -76,7 +76,9 @@ def do_callin(request):
     team = get_team(request)
     puzzle_id = request.POST["puzzle"]
     puzzle = Puzzle.objects.get(id=puzzle_id)
-
+    phone = Phone.objects.get(id=request.REQUEST['phone'])
+    if phone.team != team:
+        return
     if request.POST['action'].startswith('Buy'):
         #buy an answer
         if team.event_points < team.answer_event_point_cost:
@@ -85,7 +87,12 @@ def do_callin(request):
         else:
             team.event_points -= team.answer_event_point_cost
             team.save()
-            AnswerRequest(team=team, puzzle=puzzle, answer=puzzle.answer,answer_normalized=puzzle.answer_normalized, bought_with_event_points=True).save()
+            AnswerRequest(team=team,
+                          puzzle=puzzle,
+                          answer=puzzle.answer,
+                          answer_normalized=puzzle.answer_normalized,
+                          bought_with_event_points=True,
+                          phone=phone).save()
     else:
 
         answer = request.POST['answer']
@@ -95,7 +102,12 @@ def do_callin(request):
             return show_callin(request, dict(message=message, puzzle=puzzle))
 
         backsolve = 'backsolve' in request.POST
-        AnswerRequest(team=team, puzzle=puzzle, answer=answer,answer_normalized=answer_normalized, backsolve=backsolve).save()
+        AnswerRequest(team=team,
+                      puzzle=puzzle,
+                      answer=answer,
+                      answer_normalized=answer_normalized,
+                      backsolve=backsolve,
+                      phone=phone).save()
 
     queuelength = AnswerRequest.objects.filter(handled=False).count()
     return render_to_response('called.html', locals(), context_instance=RequestContext(request))
@@ -111,6 +123,9 @@ def do_general(request):
     team = get_team(request)
     queue = request.POST['queue']
     reason = request.POST['reason']
-    CallRequest(team=team, queue=queue, reason=reason).save()
+    phone = Phone.objects.get(id=request.REQUEST['phone'])
+    if phone.team != team:
+        return
+    CallRequest(team=team, queue=queue, reason=reason, phone=phone).save()
     queuelength = CallRequest.objects.filter(handled=False).count()
     return render_to_response('general-received.html', locals(), context_instance=RequestContext(request))

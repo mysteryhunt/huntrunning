@@ -6,9 +6,13 @@ from django.db.models import Q, F
 from django import forms
 from models import *
 
+class PhoneInline(admin.TabularInline):
+    model = Phone
+
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'phone', 'location', 'score', 'event_points', 'number_solved')
+    list_display = ('id', 'name', 'location', 'score', 'event_points', 'number_solved')
     list_editable = ('event_points',)
+    inlines = (PhoneInline,)
 
     actions = ['add_point']
 
@@ -44,7 +48,7 @@ admin.site.register(Puzzle, PuzzleAdmin)
 
 def team_link(self, areq):
     url = urlresolvers.reverse('admin:solving_team_change', args=(areq.team_id,))
-    return '<a href="%s">%s</a> at %s' % (url, areq.team.name, areq.team.phone)
+    return '<a href="%s">%s</a>' % (url, areq.team.name)
 team_link.allow_tags = True
 
 # Aargh, this is only supported in Django 1.4 which is not yet out
@@ -97,7 +101,7 @@ class CallRequestAdmin(admin.ModelAdmin):
 admin.site.register(CallRequest, CallRequestAdmin)
 
 class AnswerRequestAdmin(admin.ModelAdmin):
-    list_display = ('team', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner')
+    list_display = ('team_', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner')
     list_filter = ('team', 'handled', 'puzzle')
     list_editable = ('handled',)
     fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
@@ -105,6 +109,13 @@ class AnswerRequestAdmin(admin.ModelAdmin):
     actions = ('handle', 'claim')
 
     team_link = team_link
+
+    def team_(self, areq):
+        team = areq.team
+        phone = ""
+        if areq.owner:
+            phone = " at " + areq.phone.phone
+        return "%s%s" % (team, phone)
 
     def puzzle_link(self, areq):
         url = urlresolvers.reverse('admin:solving_puzzle_change', args=(areq.puzzle_id,))

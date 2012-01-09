@@ -26,7 +26,6 @@ class Team(models.Model):
     name = models.CharField(max_length=200)
     password = models.CharField(max_length=200)
     email = models.CharField(max_length=200)
-    phone = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
     score = models.IntegerField(default=0)
     event_points = models.IntegerField(default=0)
@@ -134,11 +133,17 @@ class Team(models.Model):
         next_batch = remaining_batches[0]
         return start_time + next_batch.base_time - next_batch.minutes_early_per_point * self.score * 60
 
+class Phone(models.Model):
+    phone = models.CharField(max_length=20)
+    team = models.ForeignKey('Team')
+
+    def __unicode__(self):
+        return self.phone
+
 class TeamUnlock(models.Model):
     team = models.ForeignKey('Team')
     batch = models.ForeignKey('UnlockBatch')
     time = models.DateTimeField(auto_now_add=True)
-
 
 @receiver(post_save, sender=TeamUnlock)
 def post_save_team_unlock(sender, instance=None, **kwargs):
@@ -192,6 +197,7 @@ class TeamAchievement(models.Model):
 
 class CallRequest(models.Model):
     team = models.ForeignKey('Team')
+    phone = models.ForeignKey('Phone')
     time = models.DateTimeField(auto_now_add=True)
     queue = models.CharField(choices=QUEUES, max_length=100)
     handled = models.BooleanField(default=False)
@@ -201,6 +207,7 @@ class CallRequest(models.Model):
 
 class AnswerRequest(models.Model):
     team = models.ForeignKey('Team')
+    phone = models.ForeignKey('Phone')
     time = models.DateTimeField(auto_now_add=True)
     answer = models.CharField(max_length=100)
     answer_normalized = models.CharField(max_length=100)

@@ -9,6 +9,14 @@
 
 Request a callback:
 <br/>
+
+Call back number:<br/>
+<select name="phone">
+{% for phone in team.phone_set.all %}
+<option value="{{phone.id}}">{{ phone.phone }}</option>
+{% endfor %}
+</select>
+
 Reason: <select name="queue">
 {% for name, queue in queues %}
 <option value="{{ queue }}">{{name}}</option>
