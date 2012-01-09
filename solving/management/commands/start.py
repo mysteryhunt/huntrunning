@@ -4,6 +4,9 @@ from hunt.solving.models import Team, Meta, UnlockBatch, TeamUnlock
 from hunt.common import safe_link
 
 import crypt
+import hashlib
+import hmac
+import json
 import os
 import random
 import string
@@ -13,6 +16,10 @@ from time import time
 SALT_VALUES=string.letters + string.digits
 
 banned_filenames = ["solved.js", "team-data.js"]
+shared_directories = ["letters"]
+
+def hmac_with_server_key(s):
+    return hmac.new(settings.APPENGINE_SERVER_KEY, s, hashlib.sha1).hexdigest()
 
 class Command(BaseCommand):
     help = """Starts the hunt, by creating a directory structure and 
@@ -51,7 +58,7 @@ This command will overwrite the htpasswd file and index files.
             #ideally, this will probably be a whole directory
             for filename in os.listdir(settings.PUZZLE_PATH):
                 path = os.path.join(settings.PUZZLE_PATH, filename)
-                if os.path.isdir(path):
+                if os.path.isdir(path) and filename not in shared_directories:
                     continue
                 if filename in banned_filenames:
                     pass
@@ -62,6 +69,14 @@ This command will overwrite the htpasswd file and index files.
 
             team.release()
 
+            #appengine stuff
+            team_file_path = os.path.join(team_path, "team-data.js")
+            f = open(team_file_path, "w")
+            print >>f, "TEAM_NAME = %s;" % json.dumps(team.id)
+            print >>f, "TEAM_AUTH = %s;" % json.dumps(hmac_with_server_key("team:"+team.id))
+            f.close()
+
+            # htpasswd stuff
             salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
             htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
 
