@@ -261,6 +261,15 @@ def post_save_answer_request(sender, instance=None, **kwargs):
         solved = Solved(team = team, puzzle = puzzle,
                         bought_with_event_points = instance.bought_with_event_points)
         solved.save()
+
+        #update team solved js
+        solved_path = os.path.join(team.team_path, "solved.js")
+        f = open(solved_path + ".tmp", "w")
+        solved = dict((solved.puzzle.title, solved.puzzle.id) for solved in Solved.objects.filter(team=team))
+        f.write(json.dumps(solved))
+        f.close()
+        os.rename(solved_path + ".tmp", solved_path)
+
         team.nsolved += 1
 
         #points is actually cubic in number of unlocks, being as sum of
