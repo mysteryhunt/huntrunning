@@ -14,18 +14,9 @@ class TeamAdmin(admin.ModelAdmin):
     list_editable = ('event_points',)
     inlines = (PhoneInline,)
 
-    actions = ['add_point']
-
-    def add_point(self, request, teams):
-        teams.update(nsolved=F('nsolved') + 1, score=F('score') + (F('nsolved') + 1) * (F('nsolved') + 1))
-        for team in teams:
-            team = Team.objects.get(id=team.id) #reload team to get new score/nsolved
-            team.release()
-
-    add_point.short_description = "Add one point to team"
-
     def number_solved(self, team):
-        return team.nsolved #just for naming purposes
+        """perhaps there is an easier way to rename a field"""
+        return team.nsolved
 
 admin.site.register(Team, TeamAdmin)
 
