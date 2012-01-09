@@ -31,6 +31,9 @@ class Team(models.Model):
     event_points = models.IntegerField(default=0)
     nsolved = models.IntegerField(default=0)
 
+    class Meta:
+        ordering = ['name']
+
     @property
     def answer_event_point_cost(self):
         return 100
