@@ -1,0 +1,63 @@
+<!html>
+<html>
+<head>
+<title>Hunt</title>
+<script type="text/javascript">
+var countdown = function () {
+	var end_time = 0; 
+	var output_element_id = 'start_time';
+	var no_time_left_message = "The hunt is scheduled to start now, but don't panic if it takes a minute or two to actually start";
+ 
+	function add_leading_zero(n) {
+		if(n.toString().length < 2) {
+			return '0' + n;
+		} else {
+			return n;
+		}
+	}
+ 
+	function format_output(time_left) {
+		var hours, minutes, seconds;
+		seconds = time_left % 60;
+		minutes = Math.floor(time_left / 60) % 60;
+		hours = Math.floor(time_left / 3600);
+ 
+		seconds = add_leading_zero(seconds);
+		minutes = add_leading_zero(minutes);
+		hours = add_leading_zero(hours);
+ 
+		return hours + ':' + minutes + ':' + seconds;
+	}
+ 
+ 
+	return {
+		timer: function () {
+      time_left = start_time - Math.round((new Date()).getTime() / 1000);
+
+      if (time_left > 0) {
+          document.getElementById(output_element_id).innerHTML = format_output(time_left);
+       		setTimeout("countdown.timer();", 999);
+      } else {
+		      document.getElementById(output_element_id).innerHTML = no_time_left_message;
+      }
+		},
+		init: function (t, element_id) {
+			start_time = t;
+			output_element_id = element_id;
+			countdown.timer();
+		}
+	};
+}();
+
+</script>
+</head>
+<body onload="countdown.init({START_TIME}, 'start_time');">
+
+It works!  You don't need to contact HQ: your password seems to be
+working fine.  Watch this space.<br/>
+
+Time until scheduled start of hunt:
+<div id="start_time"></div>
+
+</body>
+</html>

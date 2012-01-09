@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from hunt.solving.models import Team
 
+from time import time
+
 import crypt
 import os
 import random
@@ -11,14 +13,25 @@ SALT_VALUES=string.letters + string.digits
 
 class Command(BaseCommand):
     help = """Prestarts the hunt, by creating a directory structure and 
-htaccess file for each team and inserting a bogus index.html.
+htaccess file for each team and inserting a countdown index.html.
 
 This command will overwrite the htpasswd file but not index
 files.
 """
 
     def handle(self, *args, **options):
+        if not len(args):
+            print "Usage: mange.py prestart [Time in minutes until the hunt starts]"
+            return
+
+        start_in = args[0] #interpreted as minutes
+        start_in = int(start_in) * 60
+
         htpasswd_file = open(settings.HTPASSWD_PATH, "w")
+
+        index_tmpl_file = os.path.join(os.path.dirname(__file__), "prestart-index.html")
+        index = open(index_tmpl_file).read()
+        index = index.replace("{START_TIME}", str(start_in + int(time())))
 
         for team in Team.objects.all():
             team_path = os.path.join(settings.TEAM_PATH, team.id)
@@ -29,7 +42,7 @@ files.
             index_path = os.path.join(team_path, 'index.html')
             if not os.path.exists(index_path):
                 f = open(index_path, 'w')
-                f.write("""<html><head><title>Hunt</title></head><body>It works!  You don't need to contact HQ: your password seems to be working fine.  Watch this space.</body></html>""")
+                f.write(index)
                 f.close()
 
             salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
