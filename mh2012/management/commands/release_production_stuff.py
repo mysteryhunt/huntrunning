@@ -18,5 +18,5 @@ class Command(BaseCommand):
                 p.point_released = True
             if not p.puzzle_released and not p.do_not_release_puzzle_yet:
                 p.puzzle_released = True
-                puzzle = Puzzle.objects.get(round="Letters", puzzle=p.round)
+                puzzle = Puzzle.objects.get(round="Letters From Max and Leo", puzzle=p.round)
                 team.release(puzzle)
