@@ -41,7 +41,7 @@ Previous answers:
 <li>{% if not answer.handled %}(just called in) {% endif %}
 
 {% if answer.bought_with_event_points %}
-  (bought with bupkes; awaiting callback)
+  (bought with bupkis; awaiting callback)
 {% else %}
   {{ answer.answer }}
 {% endif %}
@@ -55,11 +55,11 @@ Previous answers:
 
 {% if not puzzle.is_meta %}
 
-  You have {{team.event_points}} bupkes; buying an answer costs
+  You have {{team.event_points}} bupkis; buying an answer costs
   {{team.answer_event_point_cost}}.  <br/>
 
   {% if team.event_points >= team.answer_event_point_cost %}
-    <input type="submit" value="Buy this answer with bupkes" name="action" onclick="return confirm('Warning: you are spending your hard earned bupkes!  Are you sure you want to do that?');"><br/>
+    <input type="submit" value="Buy this answer with bupkis" name="action" onclick="return confirm('Warning: you are spending your hard earned bupkis!  Are you sure you want to do that?');"><br/>
   {% endif %}
 
 {% endif %}
