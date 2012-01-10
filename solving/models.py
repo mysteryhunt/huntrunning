@@ -2,7 +2,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 from hunt.common import safe_link, safe_unlink, safe_mkdirs
 from time import time
@@ -221,6 +221,19 @@ class AnswerRequest(models.Model):
     correct = models.BooleanField(default=False)
     time_handled = models.DateTimeField()
     owner = models.ForeignKey(User, null=True)
+
+    class Meta:
+        ordering = ['time']
+
+@receiver(post_delete, sender=AnswerRequest)
+def post_delete_answer_request(instance=None, **kwargs):
+    #deleting an answer request for an answer bought with event points
+    #restore the team's event points
+    if instance.bought_with_event_points:
+        team = instance.team
+        team.event_points += team.answer_event_point_cost
+        team.save()
+
 
 @receiver(pre_save, sender=AnswerRequest)
 def pre_save_answer_request(instance=None, **kwargs):

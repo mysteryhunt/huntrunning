@@ -53,7 +53,7 @@ def award(request):
         return HttpResponse("Already used or invalid")
 
     EventPointToken(team=team, token=encoded_token).save()
-    response = "OK, event points added.  You now have %s %r" % (team.event_points + points, encoded_token)
+    response = "OK, bupkes added.  You now have %s %r" % (team.event_points + points, encoded_token)
     Team.objects.filter(id=team.id).update(event_points=F('event_points') + points)
     return HttpResponse(response)
 

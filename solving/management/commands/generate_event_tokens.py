@@ -69,7 +69,7 @@ width:50%;
                     im.save(os.path.join(code_dir, '%s.png' % token_id))
                     print >>codes_html,"""
 <td style="border:thin dashed black;text-align:center;">
-%s points<br/>
+%s bupkes<br/>
 <img src="%s.png"><br/>
 %s<br/>
 </td>

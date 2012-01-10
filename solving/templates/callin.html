@@ -1,3 +1,9 @@
+<html>
+<head>
+<title>Call in an answer
+</title>
+</head>
+<body>
 {% if solved %}
 
 Answer: <b>{{ answer }}</b>
@@ -32,7 +38,15 @@ Did you backsolve this answer? <input type="checkbox" name="backsolve" value="1"
 Previous answers:
 <ul>
 {% for answer in past_answers %}
-<li>{% if not answer.handled %}(just called in) {% endif %}{{ answer.answer }}</li>
+<li>{% if not answer.handled %}(just called in) {% endif %}
+
+{% if answer.bought_with_event_points %}
+  (bought with bupkes; awaiting callback)
+{% else %}
+  {{ answer.answer }}
+{% endif %}
+
+</li>
 {% endfor %}
 </ul>
 <br/>
@@ -41,11 +55,11 @@ Previous answers:
 
 {% if not puzzle.is_meta %}
 
-  You have {{team.event_points}} event points; buying an answer costs
+  You have {{team.event_points}} bupkes; buying an answer costs
   {{team.answer_event_point_cost}}.  <br/>
 
   {% if team.event_points >= team.answer_event_point_cost %}
-    <input type="submit" value="Buy this answer with event points" name="action"><br/>
+    <input type="submit" value="Buy this answer with bupkes" name="action" onclick="return confirm('Warning: you are spending your hard earned bupkes!  Are you sure you want to do that?');"><br/>
   {% endif %}
 
 {% endif %}
@@ -53,3 +67,5 @@ Previous answers:
 </form>
 
 {% endif %}
+</body>
+</html>
