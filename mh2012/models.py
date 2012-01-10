@@ -40,6 +40,10 @@ class ShowProduced(models.Model):
 
     unique_together=(('team', 'round'),)
 
+    @property
+    def puzzle(self):
+        return Puzzle.objects.get(round="Letters From Max and Leo", puzzle=self.round)
+
     def __unicode__(self):
         return "%s produced %s" % (self.team, self.round)
 
