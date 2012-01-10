@@ -15,8 +15,8 @@ from time import time
 
 SALT_VALUES=string.letters + string.digits
 
-banned_filenames = ["solved.js", "team-data.js"]
-shared_directories = ["memos_from_the_management"]
+banned_filenames = ["solved.js", "team-data.js", ".htaccess"]
+shared_directories = ["memos_from_the_management", "events"]
 
 def hmac_with_server_key(s):
     return hmac.new(settings.APPENGINE_SERVER_KEY, s, hashlib.sha1).hexdigest()
@@ -42,6 +42,12 @@ This command will overwrite the htpasswd file and index files.
 
         meta.save()
 
+        htaccess_path = os.path.join(settings.PUZZLE_PATH, ".htaccess")
+        if os.path.exists(htaccess_path):
+            base_htaccess = open(htaccess_path).read()
+        else:
+            base_htaccess=""
+
         n_batches = UnlockBatch.objects.order_by("batch").count()
         if not n_batches:
             print >>sys.stderr, "Need some unlock batches to start the hunt"
@@ -60,13 +66,13 @@ This command will overwrite the htpasswd file and index files.
                 path = os.path.join(settings.PUZZLE_PATH, filename)
                 if os.path.isdir(path) and filename not in shared_directories:
                     continue
+
                 if filename in banned_filenames:
-                    pass
+                    continue
 
                 team_file_path = os.path.join(team_path, filename)
 
                 safe_link(path, team_file_path)
-
             team.release()
 
             #appengine stuff
@@ -76,14 +82,15 @@ This command will overwrite the htpasswd file and index files.
             print >>f, "TEAM_AUTH = %s;" % json.dumps(hmac_with_server_key("team:"+team.id))
             f.close()
 
-            # .htaccess
-            team_file_path = os.path.join(team_path, ".htaccess")
-            htaccess_file = open(team_file_path, "w")
-            print >>htaccess_file, """
+            # create new .htacces file
+
+            team_htaccess_path = os.path.join(team_path, ".htaccess")
+            htaccess_file = open(team_htaccess_path, "w")
+            print >>htaccess_file, """%s
 AuthUserFile %s
 AuthName "Mystery Hunt"
 AuthType Basic
-Require User %s""" % (settings.HTPASSWD_PATH, team.id)
+Require User %s""" % (base_htaccess, settings.HTPASSWD_PATH, team.id)
             htaccess_file.close()
 
             # htpasswd stuff
