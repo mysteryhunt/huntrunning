@@ -18,6 +18,7 @@ SHOWS = [('A Circus Line', 'A Circus Line'),
          ('Mayan Fair Lady', 'Mayan Fair Lady'),
          ('Phantom of the Operator', 'Phantom of the Operator'),
          ('Ogre of La Mancha', 'Ogre of La Mancha'),
+         ('Password Reminder', 'Password Reminder'),
          ]
 
 
@@ -51,13 +52,16 @@ class ShowProduced(models.Model):
 def pre_save_production(sender, instance, **kwargs):
     #compute release time from delay + later of the meta solves
 
-    other_round_id = corresponding_metas[instance.round]
-    solve_time = Solved.objects.get(team=instance.team, puzzle__is_meta=True, puzzle__round=instance.round).time
+    if instance.round == "Password Reminder":
+        instance.release_at = last_solve_time
+    else:
+        other_round_id = corresponding_metas[instance.round]
+        solve_time = Solved.objects.get(team=instance.team, puzzle__is_meta=True, puzzle__round=instance.round).time
 
-    other_solve_time = Solved.objects.get(team=instance.team, puzzle__is_meta=True, puzzle__round=other_round_id).time
+        other_solve_time = Solved.objects.get(team=instance.team, puzzle__is_meta=True, puzzle__round=other_round_id).time
 
-    last_solve_time = max(solve_time, other_solve_time)
-    instance.release_at = last_solve_time + timedelta(0, PRODUCTION_POINT_DELAY)
+        last_solve_time = max(solve_time, other_solve_time)
+        instance.release_at = last_solve_time + timedelta(0, PRODUCTION_POINT_DELAY)
 
 
 
