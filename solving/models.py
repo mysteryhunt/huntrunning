@@ -65,6 +65,7 @@ class Team(models.Model):
         remaining_batches = list(UnlockBatch.objects.filter(batch__gt=last_batch).order_by('batch'))
 
         any_unlocked = False
+        last_batch = None
         for batch in remaining_batches:
             unlock_time = start_time + batch.base_time - batch.minutes_early_per_point * self.score * 60
             if unlock_time > now:
@@ -76,11 +77,12 @@ class Team(models.Model):
             for puzzle in puzzles:
                 self.release_puzzle(puzzle)
             any_unlocked = True
+            last_batch = batch
 
         if any_unlocked:
             #install the release JS file for the latest batch
 
-            release_path = os.path.join(settings.PUZZLE_PATH, "release-%s.js" % batch.batch)
+            release_path = os.path.join(settings.PUZZLE_PATH, "release-%s.js" % last_batch.batch)
             team_release_path = os.path.join(settings.TEAM_PATH, self.id, "release.js")
 
             safe_link(release_path, team_release_path)
