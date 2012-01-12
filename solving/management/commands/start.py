@@ -93,6 +93,13 @@ AuthType Basic
 Require User %s""" % (base_htaccess, settings.HTPASSWD_PATH, team.id)
             htaccess_file.close()
 
+            #solved.js, empty
+            team_solved_path = os.path.join(team_path, "solved.js")
+            solved_file = open(team_solved_path, "w")
+            print >>solved_file, "{}"
+            solved_file.close()
+
+
             # htpasswd stuff
             salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
             htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
