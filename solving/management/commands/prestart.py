@@ -51,9 +51,6 @@ files.
                 f.write(index)
                 f.close()
 
-            salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
-            htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
-
             team_htaccess_path = os.path.join(team_path, ".htaccess")
             htaccess_file = open(team_htaccess_path, "w")
             print >>htaccess_file, """%s
