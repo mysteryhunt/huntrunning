@@ -33,6 +33,12 @@ files.
         index = open(index_tmpl_file).read()
         index = index.replace("{START_TIME}", str(start_in + int(time())))
 
+        htaccess_path = os.path.join(settings.PUZZLE_PATH, ".htaccess")
+        if os.path.exists(htaccess_path):
+            base_htaccess = open(htaccess_path).read()
+        else:
+            base_htaccess=""
+
         for team in Team.objects.all():
             team_path = os.path.join(settings.TEAM_PATH, team.id)
             try:
@@ -47,6 +53,20 @@ files.
 
             salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
             htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
+
+            team_htaccess_path = os.path.join(team_path, ".htaccess")
+            htaccess_file = open(team_htaccess_path, "w")
+            print >>htaccess_file, """%s
+AuthUserFile %s
+AuthName "Mystery Hunt"
+AuthType Basic
+Require User %s""" % (base_htaccess, settings.HTPASSWD_PATH, team.id)
+            htaccess_file.close()
+
+            # htpasswd stuff
+            salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
+            htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
+
 
         salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
         htpasswd_file.write("%s:%s\n" % (settings.ADMIN_NAME, crypt.crypt(settings.ADMIN_PASSWORD, salt)))
