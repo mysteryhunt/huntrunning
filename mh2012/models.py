@@ -18,6 +18,7 @@ SHOWS = [('A Circus Line', 'A Circus Line'),
          ('Mayan Fair Lady', 'Mayan Fair Lady'),
          ('Phantom of the Operator', 'Phantom of the Operator'),
          ('Ogre of La Mancha', 'Ogre of La Mancha'),
+         ("Let's Put on a Hit!", "Let's Put on a Hit!"),
          ('Password Reminder', 'Password Reminder'),
          ]
 
@@ -52,7 +53,7 @@ class ShowProduced(models.Model):
 def pre_save_production(sender, instance, **kwargs):
     #compute release time from delay + later of the meta solves
 
-    if instance.round == "Password Reminder":
+    if instance.round == "Password Reminder" || instance.round == "Let's Put on a Hit!":
         instance.release_at = last_solve_time
     else:
         other_round_id = corresponding_metas[instance.round]
