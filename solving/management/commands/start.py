@@ -15,7 +15,7 @@ from time import time
 
 SALT_VALUES=string.letters + string.digits
 
-banned_filenames = ["solved.js", "team-data.js", ".htaccess"]
+banned_filenames = ["solved.js", "team-data.js", ".htaccess", "release.js"]
 shared_directories = ["memos_from_the_management", "events"]
 
 def hmac_with_server_key(s):
