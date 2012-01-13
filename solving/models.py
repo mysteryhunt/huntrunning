@@ -292,7 +292,7 @@ def post_save_answer_request(sender, instance=None, **kwargs):
 
         #points is actually cubic in number of unlocks, being as sum of
         #squares
-        team.score += team.nsolved * team.nsolved
+        team.score = team.nsolved * team.nsolved * team.nsolved - team.nsolved
         team.release()
         team.save()
 
