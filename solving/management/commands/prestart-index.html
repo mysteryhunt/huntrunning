@@ -1,6 +1,23 @@
-<!html>
+<!DOCTYPE HTML>
 <html>
 <head>
+<style type="text/css">
+@import url(http://fonts.googleapis.com/css?family=Abril+Fatface|Alice&subset=latin,latin-ext);
+body {
+  background: black; /* was: #200; */
+  color: white; position: relative;
+  padding: 0; margin: 0; text-align: center;
+  font-family: 'Alice', serif; font-weight: 400;
+ }
+body, #main { height: 100%; }
+#main { background: black; width: 900px; margin: 0px auto; }
+#main { padding-bottom: 30px; }
+
+h2 {
+  font-family: 'Abril Fatface', 'Alice', serif; font-weight: 400;
+  font-size: 32px;
+}
+</style>
 <title>Hunt</title>
 <script type="text/javascript">
 var countdown = function () {
@@ -52,12 +69,11 @@ var countdown = function () {
 </script>
 </head>
 <body onload="countdown.init({START_TIME}, 'start_time');">
+<h2>It works!</h2>
+<p>You don't need to contact HQ: your password seems to be
+working fine.  Watch this space.</p>
 
-It works!  You don't need to contact HQ: your password seems to be
-working fine.  Watch this space.<br/>
-
-Time until scheduled start of hunt:
-<div id="start_time"></div>
-
+<p>Time until scheduled start of hunt:
+<div id="start_time"></div></p>
 </body>
 </html>
