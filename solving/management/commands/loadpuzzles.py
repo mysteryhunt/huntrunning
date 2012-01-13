@@ -21,7 +21,7 @@ class Command(BaseCommand):
             if puzzle:
                 puzzle = puzzle[0]
                 puzzle.title = pony_info['title']
-                puzzle.answer = pony_info['answer']
+                puzzle.answer = pony_info['answer'] or 'NONANSWER'
                 puzzle.is_meta = pony_info.get('is_meta', False)
                 puzzle.round = pony_info['round']
                 puzzle.matrixed_round = pony_info['reused']
@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 puzzle.save()
             else:
                 puzzle = Puzzle(id=pony_id, title=pony_info['title'],
-                                answer=pony_info['answer'],
+                                answer=pony_info['answer'] or 'NONANSWER',
                                 round=pony_info['round'],
                                 matrixed_round=pony_info['reused'],
                                 is_meta=pony_info.get('is_meta', False),
