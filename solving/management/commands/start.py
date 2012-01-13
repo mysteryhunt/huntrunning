@@ -2,18 +2,15 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from hunt.solving.models import Team, Meta, UnlockBatch, TeamUnlock
 from hunt.common import safe_link
+from hunt.solving.password import write_htpasswd
 
-import crypt
 import hashlib
 import hmac
 import json
 import os
-import random
 import string
 import sys
 from time import time
-
-SALT_VALUES=string.letters + string.digits
 
 banned_filenames = ["solved.js", "team-data.js", ".htaccess", "release.js"]
 shared_directories = ["memos_from_the_management", "events"]
@@ -31,8 +28,6 @@ This command will overwrite the htpasswd file and index files.
 """
 
     def handle(self, *args, **options):
-        htpasswd_file = open(settings.HTPASSWD_PATH + ".tmp", "w")
-
         now = str(int(time()))
         try:
             meta = Meta.objects.get(key="start_time")
@@ -99,13 +94,4 @@ Require User %s""" % (base_htaccess, settings.HTPASSWD_PATH, team.id)
             print >>solved_file, "var puzzle_solved = {};"
             solved_file.close()
 
-
-            # htpasswd stuff
-            salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
-            htpasswd_file.write("%s:%s\n" % (team.id, crypt.crypt(team.password, salt)))
-
-        salt = random.choice(SALT_VALUES)+random.choice(SALT_VALUES)
-        htpasswd_file.write("%s:%s\n" % (settings.ADMIN_NAME, crypt.crypt(settings.ADMIN_PASSWORD, salt)))
-        htpasswd_file.close()
-
-        os.rename(settings.HTPASSWD_PATH + ".tmp", settings.HTPASSWD_PATH)
+        write_htpasswd()

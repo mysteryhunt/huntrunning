@@ -182,6 +182,9 @@ def write_team_info_js(sender, instance=None, **kwargs):
         f.close()
         os.rename(tmp_filename, filename)
 
+    from hunt.solving.password import write_htpasswd
+    write_htpasswd()
+
 QUEUES = [("General", "general"), ("Errata", "errata"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
 
 class Achievement(models.Model):
