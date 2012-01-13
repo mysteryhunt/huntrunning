@@ -20,7 +20,10 @@ class Command(BaseCommand):
         for p in produced:
             should_save = False
             if not p.point_released:
-                Team.objects.filter(id=p.team.id).update(nsolved=F('nsolved') + 1, score=F('score') + (F('nsolved') + 1) * (F('nsolved') + 1))
+                Team.objects.filter(id=p.team.id).update(nsolved=F('nsolved') + 1, score=
+                                                         (F('nsolved') + 1) * 
+                                                         (F('nsolved') + 1 + 1) * 
+                                                         (2 * (F('nsolved') + 1) + 1) / 6)
                 p.point_released = True
                 should_save = True
             if not p.puzzle_released and not p.do_not_release_puzzle_yet:
