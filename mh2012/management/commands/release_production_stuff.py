@@ -33,7 +33,9 @@ class Command(BaseCommand):
                 #generate letters/release.js
                 release_path = os.path.join(p.team.team_path, "letters_from_max_and_leo", "release.js")
                 f = open(release_path + ".tmp", "w")
-                print >>f, json.dumps([[puzzle.title, canonicalize(puzzle.title)] for puzzle in ShowsProduced.objects.filter(team=p.team)])
+                releases = [[puzzle.title, canonicalize(puzzle.title)] for puzzle in ShowsProduced.objects.filter(team=p.team)]
+                releases = [['Greetings from Max', 'greetings_from_max']] + releases
+                print >>f, json.dumps(releases)
                 f.close()
                 os.rename(release_path + ".tmp", release_path)
 

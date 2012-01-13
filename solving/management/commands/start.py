@@ -77,6 +77,18 @@ This command will overwrite the htpasswd file and index files.
             print >>f, "TEAM_AUTH = %s;" % json.dumps(hmac_with_server_key("team:"+team.id))
             f.close()
 
+            letters_path = os.path.join(team_path, "letters_from_max_and_leo")
+            if not os.path.exists(letters_path):
+                os.mkdir(letters_path)
+            release_path = os.path.join(letters_path, "release.js")
+            f = open(release_path, "w")
+            print >>f, """
+            this.letters_from_max_and_leo = [
+                ['Greetings from Max', 'greetings_from_max']
+                ];
+            """
+            f.close()
+
             # create new .htacces file
 
             team_htaccess_path = os.path.join(team_path, ".htaccess")
