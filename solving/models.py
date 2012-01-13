@@ -280,7 +280,7 @@ def post_save_answer_request(sender, instance=None, **kwargs):
         #update team solved js
         solved_path = os.path.join(team.team_path, "solved.js")
         f = open(solved_path + ".tmp", "w")
-        solved = dict((solved.puzzle.title, solved.puzzle.id) for solved in Solved.objects.filter(team=team))
+        solved = dict((canonicalize(solved.puzzle.title), solved.puzzle.id) for solved in Solved.objects.filter(team=team))
         f.write("var puzzle_solved = ")
         f.write(json.dumps(solved))
         f.write(";")
