@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
         for team in Team.objects.all():
             team.score = 0
-            team.nsolves = 0
+            team.nsolved = 0
             team.event_points = 0
             team.save()
 
