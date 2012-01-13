@@ -182,7 +182,7 @@ def write_team_info_js(sender, instance=None, **kwargs):
         f.close()
         os.rename(tmp_filename, filename)
 
-QUEUES = [("Errata", "errata"), ("General", "general"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
+QUEUES = [("General", "general"), ("Errata", "errata"), ("Pick up", "objects"), ("Puzzle-specific request(provide exact puzzle name and exact phrase describing why you are making this request)", "puzzle"), ("Production", "production")]
 
 class Achievement(models.Model):
     title = models.CharField(max_length=100)
