@@ -281,7 +281,7 @@ def post_save_answer_request(sender, instance=None, **kwargs):
         solved_path = os.path.join(team.team_path, "solved.js")
         f = open(solved_path + ".tmp", "w")
         solved = dict((solved.puzzle.title, solved.puzzle.id) for solved in Solved.objects.filter(team=team))
-        f.write("var puzzles_solved = ")
+        f.write("var puzzle_solved = ")
         f.write(json.dumps(solved))
         f.write(";")
         f.close()

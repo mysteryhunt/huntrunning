@@ -96,7 +96,7 @@ Require User %s""" % (base_htaccess, settings.HTPASSWD_PATH, team.id)
             #solved.js, empty
             team_solved_path = os.path.join(team_path, "solved.js")
             solved_file = open(team_solved_path, "w")
-            print >>solved_file, "var puzzles_solved = {};"
+            print >>solved_file, "var puzzle_solved = {};"
             solved_file.close()
 
 
