@@ -204,7 +204,7 @@ class CallRequest(models.Model):
     queue = models.CharField(choices=QUEUES, max_length=100)
     handled = models.BooleanField(default=False)
     reason = models.TextField(max_length=1000)
-    time_handled = models.DateTimeField()
+    time_handled = models.DateTimeField(null=True)
     owner = models.ForeignKey(User, null=True)
 
 class AnswerRequest(models.Model):
