@@ -115,8 +115,7 @@ class Team(models.Model):
     def team_path(self):
         return os.path.join(settings.TEAM_PATH, self.id)
 
-    @property
-    def next_unlock_time(self):
+    def next_unlock_data(self):
         """In seconds since Epoch, or -1 if everything is unlocked.
         Depends on at least one batch being unlocked; the first
         batch is unlocked by manage.py start.
@@ -140,7 +139,7 @@ class Team(models.Model):
         if not remaining_batches:
             return -1 #everything is unlocked
         next_batch = remaining_batches[0]
-        return start_time + next_batch.base_time - next_batch.minutes_early_per_point * self.score * 60
+        return start_time + next_batch.base_time - next_batch.minutes_early_per_point * self.score * 60, next_batch.minutes_early_per_point
 
 class Phone(models.Model):
     phone = models.CharField(max_length=20)
@@ -173,10 +172,13 @@ def write_team_info_js(sender, instance=None, **kwargs):
             pass
         filename = os.path.join(instance.team_path, "points.js")
         tmp_filename = filename + ".tmp"
+        next_unlock_time, next_unlock_value = instance.next_unlock_data()
+
         js = """
     this.points = %d;
     this.next_unlock_time = %s;
-    """ % (instance.score, instance.next_unlock_time)
+    this.next_unlock_value = %s;
+    """ % (instance.score, next_unlock_time, next_unlock_value)
         f = open(tmp_filename, "w")
         f.write(js)
         f.close()
