@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import F
-from hunt.solving.models import Puzzle, Team, canonicalize
+from hunt.solving.models import Puzzle, Team, canonicalize, get_meta
 from hunt.mh2012.models import ShowProduced
 
 from datetime import datetime
@@ -11,6 +11,9 @@ class Command(BaseCommand):
     help = """Release puzzles and points for productions"""
 
     def handle(self, *args, **options):
+        if not get_meta('start_time'):
+            return
+
         now = datetime.now()
         produced = ShowProduced.objects.filter(release_at__lt = now,
                                                      puzzle_released=False)
