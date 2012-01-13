@@ -18,7 +18,7 @@ def board(request):
     teams = list(Team.objects.all())
     #get team-meta matrix
 
-    metas = Puzzle.objects.filter(is_meta=True).order_by('round')
+    metas = Puzzle.objects.filter(is_meta=True).order_by('unlock_batch')
 
     solves = Solved.objects.all()
 
@@ -35,7 +35,6 @@ def board(request):
             round.meta_solved = True
         else:
             round.puzzles_solved += 1
-
 
         if puzzle.matrixed_round:
             matrixed_round = team_solves[puzzle.matrixed_round]
