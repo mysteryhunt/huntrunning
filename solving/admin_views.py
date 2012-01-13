@@ -44,6 +44,10 @@ def board(request):
     for team in teams:
         team_solves = team_round_solves[team]
         for puzzle in puzzles:
+            # Not a real round.
+            if puzzle.round == u"Letters from Max and Leo":
+                continue
+
             team_solves[puzzle.round].puzzles_total += 1
             if puzzle.matrixed_round:
                 team_solves[puzzle.matrixed_round].matrixed_puzzles_total += 1
