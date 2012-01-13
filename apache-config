@@ -23,7 +23,7 @@
 
     RewriteCond %{SCRIPT_FILENAME} !^/(users|dynamic|static|favicon.ico)/
     RewriteCond %{LA-U:REMOTE_USER} !^jasper$
-    RewriteRule (.*) /users/%{LA-U:REMOTE_USER}/$1
+    RewriteRule (.*) /users/%{LA-U:REMOTE_USER}/$1 [L,NS]
 
 	</Directory>
 
