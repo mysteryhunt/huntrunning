@@ -38,7 +38,7 @@ class PuzzleAdmin(admin.ModelAdmin):
         return AnswerRequest.objects.filter(puzzle=puzzle, correct=True).count()
 
     def unlocked(self, puzzle):
-        return TeamUnlock.objects.filter(batch=puzzle.batch).count()
+        return TeamUnlock.objects.filter(batch__batch=puzzle.unlock_batch).count()
 
 admin.site.register(Puzzle, PuzzleAdmin)
 
