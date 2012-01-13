@@ -288,7 +288,7 @@ def post_save_answer_request(sender, instance=None, **kwargs):
         f.close()
         os.rename(solved_path + ".tmp", solved_path)
 
-        team.nsolved += 1
+        team.nsolved = len(solved) / 2
 
         #points is actually cubic in number of unlocks, being as sum of
         #squares
