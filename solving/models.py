@@ -221,7 +221,7 @@ class AnswerRequest(models.Model):
     backsolve = models.BooleanField(default=False)
     handled = models.BooleanField(default=False)
     correct = models.BooleanField(default=False)
-    time_handled = models.DateTimeField()
+    time_handled = models.DateTimeField(null=True)
     owner = models.ForeignKey(User, null=True)
 
     class Meta:
