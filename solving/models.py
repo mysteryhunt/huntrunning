@@ -129,9 +129,13 @@ class Team(models.Model):
         start_time = int(start_time)
 
         #get the current batch
-        team_unlock = TeamUnlock.objects.filter(team=self).order_by('-batch__batch')[0]
+        team_unlock = list(TeamUnlock.objects.filter(team=self).order_by('-batch__batch')[:1])
+        if team_unlock:
+            batch = team_unlock[0].batch.batch
+        else:
+            batch = 0
 
-        remaining_batches = list(UnlockBatch.objects.filter(batch__gt=team_unlock.batch.batch).order_by('batch')[:1])
+        remaining_batches = list(UnlockBatch.objects.filter(batch__gt=batch).order_by('batch')[:1])
 
         if not remaining_batches:
             return -1 #everything is unlocked
@@ -161,13 +165,6 @@ def write_team_info_js(sender, instance=None, **kwargs):
 
     if get_meta("start_time"):
         #the hunt is started
-        if not TeamUnlock.objects.filter(team=instance).count():
-            #but this team has not unlocked anything.
-            #unlock the first batch for them.
-            #the hunt cannot be started unless at least one unlock batch exists
-            initial_batch = UnlockBatch.objects.order_by("batch")[0]
-            TeamUnlock(team=instance, batch=initial_batch).save()
-
         #now create the team info JS file
         try:
             os.mkdir(instance.team_path)
