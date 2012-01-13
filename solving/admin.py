@@ -26,7 +26,7 @@ class UnlockBatchAdmin(admin.ModelAdmin):
 admin.site.register(UnlockBatch, UnlockBatchAdmin)
 
 class PuzzleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch', 'wrong_answers', 'solves')
+    list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch', 'wrong_answers', 'solves', 'unlocked')
     list_filter = ('round', 'is_meta', 'unlock_batch')
 
     list_per_page = 200
@@ -36,6 +36,9 @@ class PuzzleAdmin(admin.ModelAdmin):
 
     def solves(self, puzzle):
         return AnswerRequest.objects.filter(puzzle=puzzle, correct=True).count()
+
+    def unlocked(self, puzzle):
+        return TeamUnlock.objects.filter(batch=puzzle.batch).count()
 
 admin.site.register(Puzzle, PuzzleAdmin)
 
