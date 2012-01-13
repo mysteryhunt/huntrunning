@@ -7,6 +7,7 @@ from hunt.solving.models import Solved
 
 from datetime import datetime
 import os
+import json
 
 class Command(BaseCommand):
     help = """Release puzzles and points for productions"""
