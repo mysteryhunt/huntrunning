@@ -32,10 +32,10 @@ class PuzzleAdmin(admin.ModelAdmin):
     list_per_page = 200
 
     def wrong_answers(self, puzzle):
-        AnswerRequest.objects.filter(puzzle=puzzle, correct=False).count()
+        return AnswerRequest.objects.filter(puzzle=puzzle, correct=False).count()
 
     def solves(self, puzzle):
-        AnswerRequest.objects.filter(puzzle=puzzle, correct=True).count()
+        return AnswerRequest.objects.filter(puzzle=puzzle, correct=True).count()
 
 admin.site.register(Puzzle, PuzzleAdmin)
 
