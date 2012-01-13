@@ -65,7 +65,7 @@ team_link.allow_tags = True
 
 
 class CallRequestAdmin(admin.ModelAdmin):
-    list_display = ('team', 'time', 'queue', 'handled', 'time_handled', 'reason', 'owner')
+    list_display = ('team_', 'time', 'queue', 'handled', 'time_handled', 'reason', 'owner')
     list_filter = ('queue', 'team', 'handled')
     list_editable = ('handled',)
 
@@ -75,6 +75,13 @@ class CallRequestAdmin(admin.ModelAdmin):
 
     team_link = team_link
     list_page = 200
+
+    def team_(self, creq):
+        team = creq.team
+        phone = ""
+        if creq.owner:
+            phone = " at " + creq.phone.phone
+        return "%s%s" % (team, phone)
 
     def claim(self, request, crequests):
         crequests.filter(owner=None).update(owner=request.user)
