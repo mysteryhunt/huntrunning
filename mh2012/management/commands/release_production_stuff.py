@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import F
 from hunt.solving.models import Puzzle, Team, canonicalize, get_meta
 from hunt.mh2012.models import ShowProduced
+from hunt.solving.models import Solved
 
 from datetime import datetime
 import os
@@ -20,10 +21,16 @@ class Command(BaseCommand):
         for p in produced:
             should_save = False
             if not p.point_released:
-                Team.objects.filter(id=p.team.id).update(nsolved=F('nsolved') + 1, score=
-                                                         (F('nsolved') + 1) * 
-                                                         (F('nsolved') + 1 + 1) * 
-                                                         (2 * (F('nsolved') + 1) + 1) / 6)
+                team = p.team
+                solved_puzzles = Solved.objects.filter(team=team).count()
+                shows_produced = ShowProduced.objects.filter(team=team, point_released=True).count()
+                team.nsolved = solved_puzzles + shows_produced
+
+                #points is actually cubic in number of unlocks, being as sum of
+                #squares
+                team.score = team.nsolved * (team.nsolved + 1) * (2 * team.nsolved + 1) / 6
+                team.release()
+
                 p.point_released = True
                 should_save = True
             if not p.puzzle_released and not p.do_not_release_puzzle_yet:

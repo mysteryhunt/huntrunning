@@ -289,7 +289,9 @@ def post_save_answer_request(sender, instance=None, **kwargs):
         f.close()
         os.rename(solved_path + ".tmp", solved_path)
 
-        team.nsolved = len(solved_objects)
+        from hunt.mh2012.models import ShowProduced
+        shows_produced = ShowProduced.objects.filter(team=team, point_released=True).count()
+        team.nsolved = len(solved_objects) + shows_produced
 
         #points is actually cubic in number of unlocks, being as sum of
         #squares
