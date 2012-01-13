@@ -252,11 +252,11 @@ def pre_save_call_request(instance=None, **kwargs):
 
 @receiver(post_save, sender=TeamAchievement)
 def post_save_team_achievement(sender, instance=None, **kwargs):
-    achievement_js_path = os.path.join(settings.PUZZLE_PATH, "achievements.js")
+    achievement_js_path = os.path.join(settings.PUZZLE_PATH, "achievement", "achievements.js")
     achievements = {}
     for achievement in Achievement.objects.all():
         if not achievement.public: 
-            next
+            continue
         teams = []
         achievements[achievement.title] = teams
         for team_achievement in achievement.teamachievement_set.all():
