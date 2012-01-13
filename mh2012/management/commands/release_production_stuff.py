@@ -41,9 +41,9 @@ class Command(BaseCommand):
             if should_save:
                 p.save()
                 #generate letters/release.js
-                release_path = os.path.join(p.team.team_path, "letters_from_max_and_leo", "release.js")
+                release_path = os.path.join(team.team_path, "letters_from_max_and_leo", "release.js")
                 f = open(release_path + ".tmp", "w")
-                releases = [[puzzle.title, canonicalize(puzzle.title)] for puzzle in ShowsProduced.objects.filter(team=p.team)]
+                releases = [[puzzle.title, canonicalize(puzzle.title)] for puzzle in ShowProduced.objects.filter(team=p.team)]
                 releases = [['Greetings from Max', 'greetings_from_max']] + releases
                 print >>f, json.dumps(releases)
                 f.close()
