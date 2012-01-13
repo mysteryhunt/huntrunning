@@ -20,8 +20,8 @@ class Command(BaseCommand):
                                                      puzzle_released=False)
         for p in produced:
             should_save = False
+            team = p.team
             if not p.point_released:
-                team = p.team
                 solved_puzzles = Solved.objects.filter(team=team).count()
                 shows_produced = ShowProduced.objects.filter(team=team, point_released=True).count()
                 team.nsolved = solved_puzzles + shows_produced
