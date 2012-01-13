@@ -29,6 +29,8 @@ class PuzzleAdmin(admin.ModelAdmin):
     list_display = ('title', 'path', 'round', 'answer', 'is_meta', 'unlock_batch', 'wrong_answers', 'solves')
     list_filter = ('round', 'is_meta', 'unlock_batch')
 
+    list_per_page = 200
+
     def wrong_answers(self, puzzle):
         AnswerRequest.objects.filter(puzzle=puzzle, correct=False).count()
 
@@ -72,6 +74,7 @@ class CallRequestAdmin(admin.ModelAdmin):
     actions = ('handle', 'claim')
 
     team_link = team_link
+    list_page = 200
 
     def claim(self, request, crequests):
         crequests.filter(owner=None).update(owner=request.user)
@@ -100,6 +103,8 @@ class AnswerRequestAdmin(admin.ModelAdmin):
     actions = ('handle', 'claim')
 
     team_link = team_link
+
+    list_per_page = 200
 
     def team_(self, areq):
         team = areq.team
