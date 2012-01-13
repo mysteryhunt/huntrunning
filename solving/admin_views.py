@@ -15,7 +15,7 @@ class RoundStatus:
 @staff_member_required
 def board(request):
 
-    teams = list(Team.objects.all().order_by('nsolved', 'id'))
+    teams = list(Team.objects.all().order_by('-nsolved', 'id'))
     #get team-meta matrix
 
     metas = Puzzle.objects.filter(is_meta=True).order_by('unlock_batch')
