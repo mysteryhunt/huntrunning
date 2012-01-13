@@ -31,10 +31,9 @@ def board(request):
         puzzle = solve.puzzle
         round = team_solves[puzzle.round]
 
+        round.puzzles_solved += 1
         if puzzle.is_meta:
             round.meta_solved = True
-        else:
-            round.puzzles_solved += 1
 
         if puzzle.matrixed_round:
             matrixed_round = team_solves[puzzle.matrixed_round]
