@@ -12,12 +12,12 @@ from datetime import timedelta
 #45 minutes
 PRODUCTION_POINT_DELAY = 45 * 60
 
-SHOWS = [('A Circus Line', 'A Circus Line'),
-         ('Okla-Holmes-a!', 'Okla-Holmes-a!'),
-         ('Into the Woodstock', 'Into the Woodstock'),
-         ('Mayan Fair Lady', 'Mayan Fair Lady'),
-         ('Phantom of the Operator', 'Phantom of the Operator'),
-         ('Ogre of La Mancha', 'Ogre of La Mancha'),
+SHOWS = [('Betsy Johnson', 'Betsy Johnson'),
+         ('Charles Lutwidge Dodgson', 'Charles Lutwidge Dodgson'),
+         ('William S. Bergman', 'William S. Bergman'),
+         ('Ben Bitdiddle', 'Ben Bitdiddle'),
+         ('Sheila Sunshine', 'Sheila Sunshine'),
+         ('Watson 2.0', 'Watson 2.0'),
          ("Let's Put on a Hit!", "Let's Put on a Hit!"),
          ('Password Reminder', 'Password Reminder'),
          ]
