@@ -280,15 +280,16 @@ def post_save_answer_request(sender, instance=None, **kwargs):
         #update team solved js
         solved_path = os.path.join(team.team_path, "solved.js")
         f = open(solved_path + ".tmp", "w")
-        solved = dict((solved.puzzle.id, canonicalize(solved.puzzle.title)) for solved in Solved.objects.filter(team=team))
-        solved.update(dict((canonicalize(solved.puzzle.title), solved.puzzle.id) for solved in Solved.objects.filter(team=team)))
+        solved_objects = Solved.objects.filter(team=team)
+        solved = dict((solved.puzzle.id, canonicalize(solved.puzzle.title)) for solved in solved_objects)
+        solved.update(dict((canonicalize(solved.puzzle.title), solved.puzzle.id) for solved in solved_objects))
         f.write("var puzzle_solved = ")
         f.write(json.dumps(solved))
         f.write(";")
         f.close()
         os.rename(solved_path + ".tmp", solved_path)
 
-        team.nsolved = len(solved) / 2
+        team.nsolved = len(solved_objects)
 
         #points is actually cubic in number of unlocks, being as sum of
         #squares
