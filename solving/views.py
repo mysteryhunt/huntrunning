@@ -39,7 +39,7 @@ def award(request):
     #why reencode what I just decoded?  Because b64 allows
     #multiple encodings of the same data (really!), and we
     #need the canonical encoding
-    encoded_token = base64.urlsafe_b64encode(token)[:-1]
+    encoded_token = base64.urlsafe_b64encode(token)[:-2]
 
     #has token been used yet?
     if EventPointToken.objects.filter(token=encoded_token).count():
