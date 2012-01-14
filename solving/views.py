@@ -44,7 +44,7 @@ def award(request):
     if EventPointToken.objects.filter(token=encoded_token).count():
         return HttpResponse("Already used or invalid")
 
-    encryptor = aes.new(md5(settings.SECRET_KEY).digest())
+    encryptor = aes.new(md5("salt" + settings.SECRET_KEY).digest())
     result = encryptor.decrypt(token)
     try:
         points = int(result[:4])
