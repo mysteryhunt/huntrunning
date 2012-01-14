@@ -19,7 +19,7 @@ SHOWS = [('Betsy Johnson', 'Betsy Johnson'),
          ('Sheila Sunshine', 'Sheila Sunshine'),
          ('Watson 2.0', 'Watson 2.0'),
          ("Let's Put on a Hit!", "Let's Put on a Hit!"),
-         ('Password Reminder', 'Password Reminder'),
+         ('What Ben Bitdiddle Dropped', 'What Ben Bitdiddle Dropped'),
          ]
 
 
@@ -53,7 +53,7 @@ class ShowProduced(models.Model):
 def pre_save_production(sender, instance, **kwargs):
     #compute release time from delay + later of the meta solves
 
-    if instance.round == "Password Reminder" or instance.round == "Let's Put on a Hit!":
+    if instance.round == "What Ben Bitdiddle Dropped" or instance.round == "Let's Put on a Hit!":
         instance.release_at = last_solve_time
     else:
         other_round_id = corresponding_metas[instance.round]
