@@ -7,7 +7,7 @@ from django.dispatch import receiver
 from hunt.common import safe_link, safe_unlink, safe_mkdirs
 from hunt.solving.models import Team, Puzzle, Solved
 
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 #45 minutes
 PRODUCTION_POINT_DELAY = 45 * 60
@@ -54,7 +54,8 @@ def pre_save_production(sender, instance, **kwargs):
     #compute release time from delay + later of the meta solves
 
     if instance.round == "What Ben Bitdiddle Dropped" or instance.round == "Let's Put on a Hit!":
-        instance.release_at = last_solve_time
+
+        instance.release_at = datetime.now() - timedelta(0, 1000000)
     else:
         other_round_id = corresponding_metas[instance.round]
         solve_time = Solved.objects.get(team=instance.team, puzzle__is_meta=True, puzzle__round=instance.round).time
