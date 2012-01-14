@@ -34,12 +34,11 @@ def callin(request):
 def award(request):
     team = get_team(request)
     encoded_token = str(request.GET["t"])
-    token = base64.urlsafe_b64decode(encoded_token + "==")
-
+    token = base64.urlsafe_b64decode(encoded_token + "==")[:16]
     #why reencode what I just decoded?  Because b64 allows
     #multiple encodings of the same data (really!), and we
     #need the canonical encoding
-    encoded_token = base64.urlsafe_b64encode(token)[:-2]
+    encoded_token = base64.urlsafe_b64encode(token)[:22]
 
     #has token been used yet?
     if EventPointToken.objects.filter(token=encoded_token).count():
