@@ -172,8 +172,12 @@ def write_team_info_js(sender, instance=None, **kwargs):
             pass
         filename = os.path.join(instance.team_path, "points.js")
         tmp_filename = filename + ".tmp"
-        next_unlock_time, next_unlock_value = instance.next_unlock_data()
-
+        try:
+            next_unlock_time, next_unlock_value = instance.next_unlock_data()
+        except:
+            next_unlock_time = "null"
+            next_unlock_value = "null"
+           
         js = """
     this.points = %d;
     this.next_unlock_time = %s;
