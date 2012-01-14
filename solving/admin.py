@@ -105,7 +105,7 @@ class CallRequestAdmin(admin.ModelAdmin):
 admin.site.register(CallRequest, CallRequestAdmin)
 
 class AnswerRequestAdmin(admin.ModelAdmin):
-    list_display = ('team_', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner')
+    list_display = ('team_', 'time', 'puzzle_link', 'answer', 'correct', 'handled', 'time_handled', 'backsolve', 'owner', 'bought_with_event_points')
     list_filter = ('team', 'handled', 'puzzle', 'correct')
     list_editable = ('handled',)
     fields = ('team_link', 'owner', 'puzzle', 'answer', 'answer_normalized', 'correct', 'time', 'time_handled', 'handled', 'backsolve')
