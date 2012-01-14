@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 puzzles = [Puzzle.objects.get(title=p.round) for p in ShowProduced.objects.filter(team=p.team)]
                 releases = [[puzzle.title, canonicalize(puzzle.title)] for puzzle in puzzles]
                 releases = [['Greetings from Max', 'greetings_from_max']] + releases
-                print >>f, json.dumps(releases)
+                print >>f, "this.letters_from_max_and_leo=" + json.dumps(releases)
                 f.close()
                 os.rename(release_path + ".tmp", release_path)
 
