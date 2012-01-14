@@ -27,7 +27,7 @@ class Command(BaseCommand):
         random = open("/dev/random")
         codes_html = open(os.path.join(code_dir, "codes.html"), "w")
 
-        encryptor = aes.new(md5(settings.SECRET_KEY).digest())
+        encryptor = aes.new(md5("salt" + settings.SECRET_KEY).digest())
 
         print >>codes_html,"""<html>
 <head>
@@ -76,5 +76,5 @@ width:50%;
 </td>
 """ % (denomination, token_id, url.replace("?","?<br/>"))
                 
-            print >>codes_html, "</tr></table>"
+                print >>codes_html, "</tr></table>"
         print >>codes_html,"</body></html>"
