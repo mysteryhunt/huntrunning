@@ -178,7 +178,8 @@ def write_team_info_js(sender, instance=None, **kwargs):
     this.points = %d;
     this.next_unlock_time = %s;
     this.next_unlock_value = %s;
-    """ % (instance.score, next_unlock_time, next_unlock_value)
+    this.bupkis = %s;
+    """ % (instance.score, next_unlock_time, next_unlock_value, instance.event_points)
         f = open(tmp_filename, "w")
         f.write(js)
         f.close()
