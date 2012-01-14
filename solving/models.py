@@ -50,7 +50,7 @@ class Team(models.Model):
         #get the hunt start time
         start_time = get_meta('start_time')
         if start_time is None:
-            return None
+            return None, None
         start_time = int(start_time)
 
         #get the most-recently-unlocked batch
@@ -137,7 +137,7 @@ class Team(models.Model):
         remaining_batches = list(UnlockBatch.objects.filter(batch__gt=batch).order_by('batch')[:1])
 
         if not remaining_batches:
-            return -1 #everything is unlocked
+            return None, None
         next_batch = remaining_batches[0]
         return start_time + next_batch.base_time - next_batch.minutes_early_per_point * self.score * 60, next_batch.minutes_early_per_point
 
@@ -172,18 +172,14 @@ def write_team_info_js(sender, instance=None, **kwargs):
             pass
         filename = os.path.join(instance.team_path, "points.js")
         tmp_filename = filename + ".tmp"
-        try:
-            next_unlock_time, next_unlock_value = instance.next_unlock_data()
-        except:
-            next_unlock_time = "null"
-            next_unlock_value = "null"
+        next_unlock_time, next_unlock_value = instance.next_unlock_data()
            
         js = """
     this.points = %d;
     this.next_unlock_time = %s;
     this.next_unlock_value = %s;
     this.bupkis = %s;
-    """ % (instance.score, next_unlock_time, next_unlock_value, instance.event_points)
+    """ % (instance.score, json.dumps(next_unlock_time), json.dumps(next_unlock_value), json.dumps(instance.event_points))
         f = open(tmp_filename, "w")
         f.write(js)
         f.close()
