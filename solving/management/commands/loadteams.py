@@ -18,6 +18,10 @@ class Command(BaseCommand):
             if username == "Username":
                 #header
                 continue
+
+            if " " in username:
+                print "Could not load team %s, because it has a space.  Please correct the data." % username
+                continue
             team = Team(id=username,name=name,password=password,email=email,location=location)
             team.save()
             team.phone_set.all().delete()
