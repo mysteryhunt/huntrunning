@@ -9,7 +9,15 @@ import qrencode
 import uuid
 import base64
 
-denominations = [(5, 100), (10, 145), (20, 290), (50, 181), (55, 2), (60, 2), (65, 2), (70, 2), (75, 2), (80, 1)]
+
+#these are the the numbers of each denomination that Codex's event
+#coordinator computed that we would need given ~50 teams * ~(50-100)
+#points per event * 6 events.  I don't know how accurate they are,
+#since there were a couple of bugs which caused the tokens to be full
+#of fail.  I believe that I cleaned that up, but someone who understands
+#security well should check it over to be sure.
+
+denominations = [(5, 100), (10, 145), (20, 290), (50, 180), (55, 2), (60, 2), (65, 2), (70, 2), (75, 2), (80, 1)]
 
 code_dir = "/tmp/codes"
 
@@ -21,17 +29,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
+        key = md5("salt" + settings.SECRET_KEY).digest()
+
         if not os.path.exists(code_dir):
             os.makedirs(code_dir)
 
-        random = open("/dev/random")
+        random = open("/dev/urandom")
         codes_html = open(os.path.join(code_dir, "codes.html"), "w")
 
-        encryptor = aes.new(md5("salt" + settings.SECRET_KEY).digest())
+        encryptor = aes.new(key)
 
         print >>codes_html,"""<html>
 <head>
-<style>
+<style type="text/css">
 table {
 width:100%;
 }
@@ -57,9 +67,9 @@ width:50%;
                 print >>codes_html, "<table style='cell-padding:0px;cell-spacing:0px;padding:0px;margin:0px;spacing:0px;border-collapse:collapse;%s'><tr>" % break_after
 
                 for col in range(2):
-                    token_id = "%s-%s" % (denomination, i)
+                    token_id = "%s-%s" % (denomination, i * 2 + col)
 
-                    data = "%04d%s" % (denomination, random.read(12))
+                    data = "%08d%s" % (denomination, random.read(8))
                     token = encryptor.encrypt(data)
 
                     encoded_token = base64.urlsafe_b64encode(token)[:-2]

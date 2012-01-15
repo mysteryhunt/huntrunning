@@ -47,8 +47,11 @@ def award(request):
     encryptor = aes.new(md5("salt" + settings.SECRET_KEY).digest())
     result = encryptor.decrypt(token)
     try:
-        points = int(result[:4])
+        points = int(result[:8])
     except:
+        return HttpResponse("Already used or invalid")
+
+    if (points > 300):
         return HttpResponse("Already used or invalid")
 
     EventPointToken(team=team, token=encoded_token).save()
