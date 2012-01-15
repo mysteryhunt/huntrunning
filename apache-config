@@ -21,7 +21,11 @@
 
     RedirectMatch  ^/d/(.*) /dynamic/$1
 
-    RewriteCond %{SCRIPT_FILENAME} !^/(users|dynamic|static|favicon.ico)/
+    RewriteRule ^(?:/?users/[^/]+)?(/?callin.*) /dynamic/solving/$1 [NS,NE]
+    RewriteRule ^(?:/?users/[^/]+)?(/?contact_hq.*) /dynamic/solving/general [NS,NE]
+    RewriteCond %{SCRIPT_FILENAME} !^/(users|dynamic|static|favicon.ico)
+    RewriteCond %{REQUEST_URI} !^(/errors/|/server-status)
+
     RewriteCond %{LA-U:REMOTE_USER} !^jasper$
     RewriteRule (.*) /users/%{LA-U:REMOTE_USER}/$1 [L,NS]
 
@@ -35,6 +39,15 @@
 
   Alias /users/ /home/novalis/hunt/b/teams/
 
+   <Files ~ "\.js$">
+        Header merge Cache-Control no-cache
+        Header merge Cache-Control no-store
+   </Files>
+   <Location /logout>
+      Satisfy All
+      Require user thisuserisatotallyinvaliduser
+   </Location>
+
   <Location /dynamic>
   AuthType Basic
   AuthName "Mystery Hunt"
@@ -46,7 +59,7 @@
   AuthType Basic
   AuthName "Mystery Hunt"
   AuthUserFile /home/novalis/hunt/b/.htpasswd 
-  Require User jasper
+  Require User your_admin_username
   </Location>
 
   WSGIScriptAlias /dynamic /home/novalis/hunt/b/hunt/apache/django.wsgi
